@@ -9,7 +9,7 @@ import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.model.Faculty
 
 class DashboardViewModel : ViewModel() {
-    private val repository = KuppiRepository()
+    private val repository = KuppiRepository
 
     private val _faculties = MutableStateFlow<List<Faculty>>(emptyList())
     val faculties = _faculties.asStateFlow()

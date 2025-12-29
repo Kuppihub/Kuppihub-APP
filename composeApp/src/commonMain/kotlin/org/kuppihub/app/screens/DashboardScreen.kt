@@ -9,60 +9,96 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.kuppihub.app.data.KuppiRepository
+import org.kuppihub.app.model.Department
 import org.kuppihub.app.model.Faculty
+import org.kuppihub.app.model.Semester
 import org.kuppihub.app.viewmodel.DashboardViewModel
 
+// In screens/DashboardScreen.kt
 @Composable
-fun DashboardScreen() {
-    val viewModel = viewModel { DashboardViewModel() }
-    val faculties by viewModel.faculties.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.errorMessage.collectAsState()
+fun DashboardScreen(onFacultyClick: (String) -> Unit) {
+    var faculties by remember { mutableStateOf<List<Faculty>>(emptyList()) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        } else if (error != null) {
-            Text("Error: $error", modifier = Modifier.align(Alignment.Center))
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+    // Fetch Data
+    LaunchedEffect(Unit) {
+        faculties = KuppiRepository.getFaculties()
+    }
+
+    LazyColumn(contentPadding = PaddingValues(16.dp)) {
+        items(faculties) { faculty ->
+            Card(
+                onClick = { onFacultyClick(faculty.id) }, // Pass the ID
+                modifier = Modifier.padding(bottom = 8.dp).fillMaxWidth()
             ) {
-                items(faculties) { faculty ->
-                    FacultyCard(faculty)
+                Column(Modifier.padding(16.dp)) {
+                    Text(faculty.name, style = MaterialTheme.typography.titleMedium)
+                    Text("${faculty.children.size} Departments", style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
     }
 }
 
+// Create new file: screens/DepartmentScreen.kt
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FacultyCard(faculty: Faculty) {
-    Card(
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Title: Faculty Name
-            Text(
-                text = faculty.name,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
+fun DepartmentScreen(facultyId: String, onDeptClick: (String) -> Unit) {
+    var departments by remember { mutableStateOf<List<Department>>(emptyList()) }
+    var title by remember { mutableStateOf("Loading...") }
 
-            Spacer(modifier = Modifier.height(4.dp))
+    LaunchedEffect(facultyId) {
+        val faculty = KuppiRepository.getFaculty(facultyId)
+        if (faculty != null) {
+            title = faculty.name
+            // Sort departments by order
+            departments = faculty.children.values.sortedBy { it.order }
+        }
+    }
 
-            // Subtitle: Number of Departments/Programs
-            // "levels" tells us what the children are (e.g. "Department" or "Program")
-            val childType = faculty.levels.firstOrNull() ?: "Department"
-            val count = faculty.children.size
+    Scaffold(topBar = { TopAppBar(title = { Text(title) }) }) { p ->
+        LazyColumn(contentPadding = p, modifier = Modifier.padding(16.dp)) {
+            items(departments) { dept ->
+                Card(
+                    onClick = { onDeptClick(dept.id) }, // Pass Dept ID (e.g., "cse")
+                    modifier = Modifier.padding(bottom = 8.dp).fillMaxWidth()
+                ) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(dept.name, style = MaterialTheme.typography.titleMedium)
+                        Text("Tap to view Semesters", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        }
+    }
+}
 
-            Text(
-                text = "$count ${childType}s",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+
+// Create new file: screens/SemesterScreen.kt
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SemesterScreen(facultyId: String, deptId: String) {
+    var semesters by remember { mutableStateOf<List<Semester>>(emptyList()) }
+    var title by remember { mutableStateOf("Loading...") }
+
+    LaunchedEffect(Unit) {
+        val dept = KuppiRepository.getDepartment(facultyId, deptId)
+        if (dept != null) {
+            title = dept.name
+            semesters = dept.children.values.sortedBy { it.order }
+        }
+    }
+
+    Scaffold(topBar = { TopAppBar(title = { Text(title) }) }) { p ->
+        LazyColumn(contentPadding = p, modifier = Modifier.padding(16.dp)) {
+            items(semesters) { semester ->
+                Card(modifier = Modifier.padding(bottom = 8.dp).fillMaxWidth()) {
+                    Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(semester.name, style = MaterialTheme.typography.bodyLarge)
+                        Text("${semester.modules.size} Modules", color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
         }
     }
 }

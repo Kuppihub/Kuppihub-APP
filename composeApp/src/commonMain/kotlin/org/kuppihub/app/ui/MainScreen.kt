@@ -11,10 +11,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import org.kuppihub.app.navigation.BottomTab
 import org.kuppihub.app.navigation.DashboardRoute
+import org.kuppihub.app.navigation.LevelOneRoute
+import org.kuppihub.app.navigation.LevelTwoRoute
 import org.kuppihub.app.navigation.LoginRoute
 import org.kuppihub.app.screens.DashboardScreen
+import org.kuppihub.app.screens.LevelOneScreen
+import org.kuppihub.app.screens.LevelTwoScreen
 import org.kuppihub.app.screens.LoginScreen
 
 @Composable
@@ -52,13 +57,48 @@ fun MainScreen() {
         }
     ) { innerPadding ->
         // The Container for your screens
+
+
+        // Inside ui/MainScreen.kt
+
         NavHost(
             navController = navController,
             startDestination = DashboardRoute,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable<DashboardRoute> { DashboardScreen() }
-            composable<LoginRoute> { LoginScreen(onLoginClick = {}) }
+            // 1. Dashboard (The Root)
+            composable<DashboardRoute> {
+                DashboardScreen(
+                    onFacultyClick = { facultyId ->
+                        // "Go to the next level" (whatever that level is named)
+                        navController.navigate(LevelOneRoute(facultyId))
+                    }
+                )
+            }
+
+            // 2. Generic Level One (Years, Departments, etc.)
+            composable<LevelOneRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<LevelOneRoute>()
+                LevelOneScreen(
+                    facultyId = route.facultyId,
+                    onItemClick = { childId ->
+                        // "Go to the final level" (Semesters, Terms)
+                        navController.navigate(LevelTwoRoute(route.facultyId, childId))
+                    }
+                )
+            }
+
+            // 3. Generic Level Two (Semesters, Terms)
+            composable<LevelTwoRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<LevelTwoRoute>()
+                LevelTwoScreen(
+                    facultyId = route.facultyId,
+                    childId = route.childId
+                )
+            }
+
+            // Login (Keep as is)
+            composable<LoginRoute> { LoginScreen {} }
         }
     }
 }

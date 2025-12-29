@@ -6,9 +6,10 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import org.kuppihub.app.model.Department
 import org.kuppihub.app.model.Faculty
 
-class KuppiRepository {
+object KuppiRepository {
 
     private val client = HttpClient {
         install(ContentNegotiation) {
@@ -19,15 +20,33 @@ class KuppiRepository {
         }
     }
 
-    // The API returns a JSON Object where keys are strings ("it", "engineering")
-    // and values are the Faculty objects.
-    suspend fun getFaculties(): List<Faculty> {
-        val responseMap: Map<String, Faculty> = client
-            .get("https://kuppihub.org/api/hierarchy")
-            .body()
+    private var cachedHierarchy: Map<String, Faculty>? = null
 
-        // 1. Convert the Map values to a List
-        // 2. Sort by the 'order' field (1, 2, 3...)
-        return responseMap.values.sortedBy { it.order }
+    suspend fun getFaculties(): List<Faculty> {
+        if (cachedHierarchy == null) {
+            // FIX IS HERE: Added <Map<String, Faculty>>
+            val response = client
+                .get("https://kuppihub.org/api/hierarchy")
+                .body<Map<String, Faculty>>()
+
+            // Inject IDs
+            response.forEach { (key, faculty) ->
+                faculty.id = key
+                faculty.children.forEach { (deptKey, dept) -> dept.id = deptKey }
+            }
+            cachedHierarchy = response
+        }
+
+        return cachedHierarchy!!.values.sortedBy { it.order }
+    }
+
+    suspend fun getFaculty(id: String): Faculty? {
+        if (cachedHierarchy == null) getFaculties()
+        return cachedHierarchy?.get(id)
+    }
+
+    suspend fun getDepartment(facultyId: String, deptId: String): Department? {
+        val faculty = getFaculty(facultyId)
+        return faculty?.children?.get(deptId)
     }
 }

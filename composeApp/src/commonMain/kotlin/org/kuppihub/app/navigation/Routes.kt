@@ -10,3 +10,11 @@ object LoginRoute
 // This represents the Dashboard (Main) Screen
 @Serializable
 object DashboardRoute
+
+@Serializable
+// Represents the first level of children (Years, Departments, Programs)
+data class LevelOneRoute(val facultyId: String)
+
+@Serializable
+// Represents the second level (Terms, Semesters)
+data class LevelTwoRoute(val facultyId: String, val childId: String)
