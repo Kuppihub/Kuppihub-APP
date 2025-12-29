@@ -25,6 +25,7 @@ data class Department(
 
 @Serializable
 data class Semester(
+    var id: String = "",
     val name: String,
     val order: Int,
     val modules: List<Int> = emptyList()

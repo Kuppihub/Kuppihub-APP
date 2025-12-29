@@ -15,11 +15,13 @@ import androidx.navigation.toRoute
 import org.kuppihub.app.navigation.BottomTab
 import org.kuppihub.app.navigation.DashboardRoute
 import org.kuppihub.app.navigation.LevelOneRoute
+import org.kuppihub.app.navigation.LevelThreeRoute
 import org.kuppihub.app.navigation.LevelTwoRoute
 import org.kuppihub.app.navigation.LoginRoute
 import org.kuppihub.app.screens.DashboardScreen
 import org.kuppihub.app.screens.LevelOneScreen
 import org.kuppihub.app.screens.LevelTwoScreen
+import org.kuppihub.app.screens.LevelThreeScreen
 import org.kuppihub.app.screens.LoginScreen
 
 @Composable
@@ -93,7 +95,23 @@ fun MainScreen() {
                 val route = backStackEntry.toRoute<LevelTwoRoute>()
                 LevelTwoScreen(
                     facultyId = route.facultyId,
-                    childId = route.childId
+                    childId = route.childId,
+                    // 👇 YOU MUST ADD THIS BLOCK
+                    onItemClick = { semesterId ->
+                        navController.navigate(
+                            LevelThreeRoute(route.facultyId, route.childId, semesterId)
+                        )
+                    }
+                )
+            }
+
+
+            composable<LevelThreeRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<LevelThreeRoute>()
+                LevelThreeScreen(
+                    facultyId = route.facultyId,
+                    childId = route.childId,
+                    semesterId = route.semesterId
                 )
             }
 

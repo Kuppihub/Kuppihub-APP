@@ -18,3 +18,11 @@ data class LevelOneRoute(val facultyId: String)
 @Serializable
 // Represents the second level (Terms, Semesters)
 data class LevelTwoRoute(val facultyId: String, val childId: String)
+
+
+@Serializable
+data class LevelThreeRoute(
+    val facultyId: String,
+    val childId: String,
+    val semesterId: String
+)
