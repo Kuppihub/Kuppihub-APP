@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,25 +16,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch // Needed for the Snackbar popup
 import org.kuppihub.app.data.KuppiRepository
+import org.kuppihub.app.data.LocalDashboardRepo
 import org.kuppihub.app.model.ModuleResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String) {
+    // 1. Setup the popup system (Snackbar) instead of Toast
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     var modules by remember { mutableStateOf<List<ModuleResponse>>(emptyList()) }
     var title by remember { mutableStateOf("Loading...") }
     var isLoading by remember { mutableStateOf(true) }
-    var debugText by remember { mutableStateOf("") } // To show errors on screen
+    var debugText by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         println("DEBUG: Level 3 Started for Faculty: $facultyId, Dept: $childId, Sem: $semesterId")
 
-        // 1. Get Semester
         val semester = KuppiRepository.getSemester(facultyId, childId, semesterId)
 
         if (semester == null) {
-            println("DEBUG: ERROR - Semester object is NULL!")
             debugText = "Error: Semester data not found in cache."
             isLoading = false
             return@LaunchedEffect
@@ -40,26 +46,16 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String) {
 
         title = semester.name
         val moduleIds = semester.modules
-        println("DEBUG: Found Semester '${semester.name}'. Module IDs: $moduleIds")
 
         if (moduleIds.isEmpty()) {
-            println("DEBUG: This semester has 0 modules.")
             debugText = "No modules listed for this semester."
         } else {
-            // 2. Fetch Modules
             try {
-                println("DEBUG: Fetching details for IDs: $moduleIds")
                 val result = KuppiRepository.getModulesByIds(moduleIds)
-                println("DEBUG: API Response Size: ${result.size}")
-
-                if (result.isEmpty()) {
-                    debugText = "API returned 0 modules."
-                }
-
+                if (result.isEmpty()) debugText = "API returned 0 modules."
                 modules = result
             } catch (e: Exception) {
                 e.printStackTrace()
-                println("DEBUG: API FAILED - ${e.message}")
                 debugText = "API Error: ${e.message}"
             }
         }
@@ -67,25 +63,39 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String) {
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(title) }) }
+        topBar = { TopAppBar(title = { Text(title) }) },
+        // 2. Add the Snackbar Host here so the popup can appear
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { p ->
         Box(modifier = Modifier.padding(p).fillMaxSize()) {
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (modules.isEmpty()) {
-                // Show the debug reason on screen
                 Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("No modules found.")
                     Spacer(Modifier.height(8.dp))
                     Text(debugText, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                 }
             } else {
+
                 LazyColumn(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(modules) { item ->
-                        ModuleCard(item)
+                        ModuleCard(
+                            item = item,
+                            onActionButtonClick = {
+                                // 3. Save to Database (No Context needed now)
+                                LocalDashboardRepo.addModule(item)
+
+                                // 4. Show "Added" message using Snackbar
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Added ${item.module.code} to Dashboard!")
+                                }
+                            },
+                            isAdded = false
+                        )
                     }
                 }
             }
@@ -94,7 +104,7 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String) {
 }
 
 @Composable
-fun ModuleCard(item: ModuleResponse) {
+fun ModuleCard(item: ModuleResponse, onActionButtonClick: () -> Unit = {}, isAdded: Boolean = false) {
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -105,7 +115,7 @@ fun ModuleCard(item: ModuleResponse) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left Side: Module Code Bubble (e.g. "CS1040")
+            // Left Side: Module Code Bubble
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -147,6 +157,15 @@ fun ModuleCard(item: ModuleResponse) {
                         )
                     }
                 }
+            }
+
+            // Right Side: Add/Remove Button
+            IconButton(onClick = onActionButtonClick) {
+                Icon(
+                    imageVector = if (isAdded) Icons.Default.Delete else Icons.Default.AddCircle,
+                    contentDescription = if (isAdded) "Remove" else "Add",
+                    tint = if (isAdded) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                )
             }
         }
     }
