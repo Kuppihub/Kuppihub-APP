@@ -32,9 +32,12 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String) {
     var title by remember { mutableStateOf("Loading...") }
     var isLoading by remember { mutableStateOf(true) }
     var debugText by remember { mutableStateOf("") }
+    var savedIds by remember { mutableStateOf<Set<Int>>(emptySet()) }
 
     LaunchedEffect(Unit) {
         println("DEBUG: Level 3 Started for Faculty: $facultyId, Dept: $childId, Sem: $semesterId")
+        val savedList = LocalDashboardRepo.getSavedModules()
+        savedIds = savedList.map { it.module.id }.toSet()
 
         val semester = KuppiRepository.getSemester(facultyId, childId, semesterId)
 
@@ -83,18 +86,23 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String) {
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(modules) { item ->
+                        val isAlreadySaved = savedIds.contains(item.module.id)
                         ModuleCard(
                             item = item,
+                            isAdded = isAlreadySaved, // Pass the status
+                            isInDashboardScreen = false, // We are in Level 3
                             onActionButtonClick = {
-                                // 3. Save to Database (No Context needed now)
-                                LocalDashboardRepo.addModule(item)
+                                if (!isAlreadySaved) {
+                                    LocalDashboardRepo.addModule(item)
 
-                                // 4. Show "Added" message using Snackbar
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("Added ${item.module.code} to Dashboard!")
+                                    // 4. Update the state immediately so the UI changes to "Added"
+                                    savedIds = savedIds + item.module.id
+
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Added to Dashboard")
+                                    }
                                 }
-                            },
-                            isAdded = false
+                            }
                         )
                     }
                 }
@@ -104,18 +112,22 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String) {
 }
 
 @Composable
-fun ModuleCard(item: ModuleResponse, onActionButtonClick: () -> Unit = {}, isAdded: Boolean = false) {
+
+fun ModuleCard(
+    item: ModuleResponse,
+    onActionButtonClick: () -> Unit = {},
+    isAdded: Boolean = false, // True if the module is currently in the database
+    isInDashboardScreen: Boolean = false // True ONLY if we are on the 'My Dashboard' tab
+) {
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left Side: Module Code Bubble
+            // ... (Code Bubble & Name Column remain exactly the same) ...
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -132,40 +144,46 @@ fun ModuleCard(item: ModuleResponse, onActionButtonClick: () -> Unit = {}, isAdd
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Center: Name and Video Count
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.module.name,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium
                 )
+                // ... Video count logic can stay here ...
+            }
 
-                if (item.video_count > 0) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+            // --- CHANGED LOGIC HERE ---
+            if (isInDashboardScreen) {
+                // Case A: We are in Dashboard -> Show Delete Button
+                IconButton(onClick = onActionButtonClick) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Remove",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            } else {
+                // Case B: We are in Level 3
+                if (isAdded) {
+                    // It is already added -> Show "Added" Text
+                    Text(
+                        text = "Added",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary, // Green-ish usually
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                } else {
+                    // It is NOT added -> Show Plus Button
+                    IconButton(onClick = onActionButtonClick) {
                         Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Videos",
-                            modifier = Modifier.size(14.dp),
+                            imageVector = Icons.Default.AddCircle,
+                            contentDescription = "Add",
                             tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "${item.video_count} Videos",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
-            }
-
-            // Right Side: Add/Remove Button
-            IconButton(onClick = onActionButtonClick) {
-                Icon(
-                    imageVector = if (isAdded) Icons.Default.Delete else Icons.Default.AddCircle,
-                    contentDescription = if (isAdded) "Remove" else "Add",
-                    tint = if (isAdded) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-                )
             }
         }
     }

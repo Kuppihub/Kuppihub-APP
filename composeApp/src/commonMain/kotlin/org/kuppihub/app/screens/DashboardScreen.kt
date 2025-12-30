@@ -51,7 +51,8 @@ fun DashboardScreen() {
                             // FIX 3: removed 'context' argument here too
                             savedModules = LocalDashboardRepo.getSavedModules()
                         },
-                        isAdded = true
+                        isAdded = true ,
+                        isInDashboardScreen = true
                     )
                 }
             }
