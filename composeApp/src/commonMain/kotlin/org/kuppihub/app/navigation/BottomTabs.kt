@@ -1,6 +1,7 @@
 package org.kuppihub.app.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -15,8 +16,14 @@ sealed class BottomTab(
     data object Dashboard : BottomTab("Dashboard", Icons.Default.Home, DashboardRoute)
     data object Login : BottomTab("Login", Icons.Default.Lock, LoginRoute)
 
+    object AddModules : BottomTab(
+        route = AddModulesRoute,
+        icon = Icons.Default.AddCircle, // Choose a suitable icon
+        label = "Add Modules"
+    )
+
     // Helper list to loop through in the UI
     companion object {
-        val allTabs = listOf(Dashboard, Login)
+        val allTabs = listOf(Dashboard, Login, AddModules)
     }
 }

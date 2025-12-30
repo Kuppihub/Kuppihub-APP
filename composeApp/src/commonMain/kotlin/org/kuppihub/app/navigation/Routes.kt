@@ -3,6 +3,9 @@ package org.kuppihub.app.navigation
 import kotlinx.serialization.Serializable
 
 
+
+@Serializable
+object AddModulesRoute
 // This represents the Login Screen
 @Serializable
 object LoginRoute

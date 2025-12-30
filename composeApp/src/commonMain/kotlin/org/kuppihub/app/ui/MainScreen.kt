@@ -12,17 +12,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import org.kuppihub.app.navigation.AddModulesRoute
 import org.kuppihub.app.navigation.BottomTab
 import org.kuppihub.app.navigation.DashboardRoute
 import org.kuppihub.app.navigation.LevelOneRoute
 import org.kuppihub.app.navigation.LevelThreeRoute
 import org.kuppihub.app.navigation.LevelTwoRoute
 import org.kuppihub.app.navigation.LoginRoute
+import org.kuppihub.app.screens.AddModulesScreen
 import org.kuppihub.app.screens.DashboardScreen
 import org.kuppihub.app.screens.LevelOneScreen
 import org.kuppihub.app.screens.LevelTwoScreen
 import org.kuppihub.app.screens.LevelThreeScreen
 import org.kuppihub.app.screens.LoginScreen
+
 
 @Composable
 fun MainScreen() {
@@ -68,9 +71,15 @@ fun MainScreen() {
             startDestination = DashboardRoute,
             modifier = Modifier.padding(innerPadding)
         ) {
-            // 1. Dashboard (The Root)
+
             composable<DashboardRoute> {
-                DashboardScreen(
+                DashboardScreen()
+            }
+
+
+            // 1. Dashboard (The Root)
+            composable<AddModulesRoute> {
+                AddModulesScreen(
                     onFacultyClick = { facultyId ->
                         // "Go to the next level" (whatever that level is named)
                         navController.navigate(LevelOneRoute(facultyId))
@@ -120,3 +129,4 @@ fun MainScreen() {
         }
     }
 }
+
