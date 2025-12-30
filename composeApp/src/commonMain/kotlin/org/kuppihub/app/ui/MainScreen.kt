@@ -101,7 +101,8 @@ fun MainScreen() {
                     onItemClick = { childId ->
                         // "Go to the final level" (Semesters, Terms)
                         navController.navigate(LevelTwoRoute(route.facultyId, childId))
-                    }
+                    },
+                    onBackClick = { navController.popBackStack() }
                 )
             }
 
@@ -116,7 +117,9 @@ fun MainScreen() {
                         navController.navigate(
                             LevelThreeRoute(route.facultyId, route.childId, semesterId)
                         )
-                    }
+
+                    },
+                    onBackClick = { navController.popBackStack() }
                 )
             }
 
@@ -126,7 +129,8 @@ fun MainScreen() {
                 LevelThreeScreen(
                     facultyId = route.facultyId,
                     childId = route.childId,
-                    semesterId = route.semesterId
+                    semesterId = route.semesterId,
+                    onBackClick = { navController.popBackStack() }
                 )
             }
 
@@ -138,7 +142,8 @@ fun MainScreen() {
                 val route = backStackEntry.toRoute<KuppiListRoute>()
                 KuppiListScreen(
                     moduleId = route.moduleId,
-                    moduleCode = route.moduleCode
+                    moduleCode = route.moduleCode,
+                    onBackClick = { navController.popBackStack() }
                 )
             }
         }

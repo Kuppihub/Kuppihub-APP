@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,7 +24,7 @@ import org.kuppihub.app.model.ModuleResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String) {
+fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String,onBackClick: () -> Unit) {
     // 1. Setup the popup system (Snackbar) instead of Toast
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -66,7 +67,16 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String) {
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(title) }) },
+        topBar = { TopAppBar(title = { Text(title) },
+            navigationIcon = {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+            }
+        ) },
         // 2. Add the Snackbar Host here so the popup can appear
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { p ->

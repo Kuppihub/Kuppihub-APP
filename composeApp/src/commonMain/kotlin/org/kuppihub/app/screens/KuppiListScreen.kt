@@ -14,6 +14,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
@@ -34,7 +36,7 @@ import org.kuppihub.app.model.KuppiResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun KuppiListScreen(moduleId: Int, moduleCode: String) {
+fun KuppiListScreen(moduleId: Int, moduleCode: String,onBackClick: () -> Unit) {
     var kuppis by remember { mutableStateOf<List<KuppiResponse>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
@@ -52,7 +54,16 @@ fun KuppiListScreen(moduleId: Int, moduleCode: String) {
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("$moduleCode Videos") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("$moduleCode Videos") },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+                 },
         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) // Light background
     ) { p ->
         Box(modifier = Modifier.padding(p).fillMaxSize()) {

@@ -5,8 +5,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,7 +30,7 @@ import org.kuppihub.app.model.Department
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LevelOneScreen(facultyId: String, onItemClick: (String) -> Unit) {
+fun LevelOneScreen(facultyId: String, onItemClick: (String) -> Unit, onBackClick: () -> Unit) {
     var items by remember { mutableStateOf<List<Department>>(emptyList()) }
     var screenTitle by remember { mutableStateOf("Loading...") }
 
@@ -45,7 +49,13 @@ fun LevelOneScreen(facultyId: String, onItemClick: (String) -> Unit) {
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(screenTitle) }) }
+        topBar = { TopAppBar(title = { Text(screenTitle) },
+            navigationIcon = {
+                IconButton(onClick = onBackClick) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            }
+            ) }
     ) { p ->
         LazyColumn(contentPadding = p, modifier = Modifier.padding(16.dp)) {
             items(items) { item ->
