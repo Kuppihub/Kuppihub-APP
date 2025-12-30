@@ -151,7 +151,26 @@ fun ModuleCard(
                     fontWeight = FontWeight.Medium
                 )
                 // ... Video count logic can stay here ...
-            }
+                if (item.video_count > 0) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = "Videos",
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${item.video_count} Videos",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+
+        }
 
             // --- CHANGED LOGIC HERE ---
             if (isInDashboardScreen) {

@@ -4,6 +4,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.kuppihub.app.model.Department
@@ -68,6 +69,23 @@ object KuppiRepository {
         return client
             .get("https://kuppihub.org/api/modules-by-ids?ids=$idsString")
             .body<List<ModuleResponse>>()
+    }
+
+    // Inside KuppiRepository object
+
+    suspend fun getDashboardDetails(ids: List<Int>): List<ModuleResponse> {
+        if (ids.isEmpty()) return emptyList()
+
+        // Convert list [33, 34] to string "33,34"
+        val idString = ids.joinToString(",")
+
+        // Call the endpoint
+        // Assuming 'client' is your Ktor HttpClient defined in the Repo
+        val response: List<ModuleResponse> = client.get("https://kuppihub.org/api/dashboard-modules") {
+            parameter("ids", idString)
+        }.body()
+
+        return response
     }
 
 }
