@@ -10,7 +10,13 @@ data class KuppiResponse(
     val description: String? = null,
 
     @SerialName("created_at")
-    val createdAt: String, // e.g. "2025-10-03T09:37..."
+    val createdAt: String,
+
+    @SerialName("language_code")
+    val languageCode: String? = null,
+
+    @SerialName("is_kuppi")
+    val isKuppi: Boolean = false,
 
     @SerialName("youtube_links")
     val youtubeLinks: List<String>? = emptyList(),
@@ -20,6 +26,12 @@ data class KuppiResponse(
 
     @SerialName("material_urls")
     val materialLinks: List<String>? = emptyList(),
+
+    @SerialName("onedrive_cloud_video_urls")
+    val onedriveLinks: List<String>? = emptyList(),
+
+    @SerialName("gdrive_cloud_video_urls")
+    val gdriveLinks: List<String>? = emptyList(),
 
     val owner: Owner? = null
 )
