@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// The Blue Color from your Tailwind class (text-blue-600)
 val KuppiBlue = Color(0xFF2563EB)
 
 @Composable
@@ -23,41 +22,28 @@ fun KuppiLogo(
     modifier: Modifier = Modifier,
     showText: Boolean = true
 ) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // 1. The Book Icon (Drawn from your SVG path)
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        // The Icon
         Icon(
-            imageVector = BookIconVector,
-            contentDescription = "Kuppi Hub Logo",
+            imageVector = BookIconVector, // Uses the drawing below
+            contentDescription = "Kuppi Hub",
             tint = KuppiBlue,
-            modifier = Modifier.size(32.dp) // Adjust size as needed
+            modifier = Modifier.size(32.dp)
         )
 
-        // 2. The Text (Optional)
+        // The Text (Hidden on child screens)
         if (showText) {
             Spacer(modifier = Modifier.width(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "Kuppi",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface // Black/Dark Gray
-                )
+                Text("Kuppi", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "Hub",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = KuppiBlue
-                )
+                Text("Hub", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = KuppiBlue)
             }
         }
     }
 }
 
-// This converts your SVG path string into a Compose Vector
+// 👇 THIS PART IS CRITICAL. IF MISSING, ICON WONT SHOW.
 private val BookIconVector: ImageVector
     get() = ImageVector.Builder(
         name = "BookIcon",
@@ -67,13 +53,11 @@ private val BookIconVector: ImageVector
         viewportHeight = 24f
     ).apply {
         path(
-            stroke = SolidColor(Color.Black), // We override this with tint later
+            stroke = SolidColor(Color.Black),
             strokeLineWidth = 2f,
             strokeLineCap = StrokeCap.Round,
-            strokeLineJoin = StrokeJoin.Round,
-            pathFillType = androidx.compose.ui.graphics.PathFillType.NonZero
+            strokeLineJoin = StrokeJoin.Round
         ) {
-            // This is the exact path data from your SVG
             // M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253
             moveTo(12f, 6.253f)
             verticalLineToRelative(13f)

@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch // Needed for the Snackbar popup
 import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.data.LocalDashboardRepo
 import org.kuppihub.app.model.ModuleResponse
+import org.kuppihub.app.ui.components.KuppiLogo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +68,14 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String,onBa
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(title) },
+        topBar = { TopAppBar(title = {
+            // 👈 2. Updated Title with Logo
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                KuppiLogo(showText = false) // Blue Book Icon
+                Spacer(Modifier.width(12.dp))
+                Text(title, style = MaterialTheme.typography.titleMedium)
+            }
+        },
             navigationIcon = {
                 IconButton(onClick = onBackClick) {
                     Icon(

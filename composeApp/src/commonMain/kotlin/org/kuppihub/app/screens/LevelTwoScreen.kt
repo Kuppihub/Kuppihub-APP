@@ -2,8 +2,10 @@ package org.kuppihub.app.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -23,10 +25,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.model.Semester
+import org.kuppihub.app.ui.components.KuppiLogo
 
 // ... imports
 
@@ -67,7 +71,13 @@ fun LevelTwoScreen(
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text(screenTitle) },
+        topBar = { TopAppBar(title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                KuppiLogo(showText = false)
+                Spacer(Modifier.width(12.dp))
+                Text(screenTitle, style = MaterialTheme.typography.titleMedium)
+            }
+        },
             navigationIcon = {
                 IconButton(onClick = onBackClick) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back")
