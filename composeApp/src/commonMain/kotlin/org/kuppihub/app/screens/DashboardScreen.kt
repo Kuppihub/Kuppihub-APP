@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.data.LocalDashboardRepo
 import org.kuppihub.app.model.ModuleResponse
+import org.kuppihub.app.ui.components.KuppiLogo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +55,10 @@ fun DashboardScreen(
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("My Dashboard") }) }
+        topBar = { TopAppBar(
+            title = { KuppiLogo() }
+
+            ) }
     ) { p ->
         Box(modifier = Modifier.padding(p).fillMaxSize()) {
             if (isLoading) {
