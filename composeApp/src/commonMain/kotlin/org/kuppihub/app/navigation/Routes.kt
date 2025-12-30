@@ -29,3 +29,6 @@ data class LevelThreeRoute(
     val childId: String,
     val semesterId: String
 )
+
+@Serializable
+data class KuppiListRoute(val moduleId: Int, val moduleCode: String)

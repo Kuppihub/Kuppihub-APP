@@ -1,5 +1,6 @@
 package org.kuppihub.app.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,7 +15,9 @@ import org.kuppihub.app.model.ModuleResponse
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen() {
+fun DashboardScreen(
+    onModuleClick:(Int, String) -> Unit
+) {
     // We hold the list of modules to display here
     var displayModules by remember { mutableStateOf<List<ModuleResponse>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -84,18 +87,23 @@ fun DashboardScreen() {
                     }
 
                     items(displayModules) { item ->
-                        ModuleCard(
-                            item = item,
-                            isAdded = true,
-                            isInDashboardScreen = true, // Shows Delete Icon
-                            onActionButtonClick = {
-                                // Remove from Local DB
-                                LocalDashboardRepo.removeModule(item.module.id)
-
-                                // Remove from UI List immediately
-                                displayModules = displayModules.filter { it.module.id != item.module.id }
-                            }
-                        )
+                        // FIX 2: We wrap the card in a Box to handle the click.
+                        // This way, we don't need to change ModuleCard code at all!
+                        Box(
+                            modifier = Modifier
+                                .clickable { onModuleClick(item.module.id, item.module.code) }
+                        ) {
+                            ModuleCard(
+                                item = item,
+                                isAdded = true,
+                                isInDashboardScreen = true,
+                                onActionButtonClick = {
+                                    LocalDashboardRepo.removeModule(item.module.id)
+                                    displayModules = displayModules.filter { it.module.id != item.module.id }
+                                }
+                                // We removed 'onCardClick' here because we are handling it in the Box above
+                            )
+                        }
                     }
                 }
             }

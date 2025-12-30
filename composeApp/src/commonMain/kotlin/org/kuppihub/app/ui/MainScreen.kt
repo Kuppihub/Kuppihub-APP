@@ -19,8 +19,10 @@ import org.kuppihub.app.navigation.LevelOneRoute
 import org.kuppihub.app.navigation.LevelThreeRoute
 import org.kuppihub.app.navigation.LevelTwoRoute
 import org.kuppihub.app.navigation.LoginRoute
+import org.kuppihub.app.navigation.KuppiListRoute
 import org.kuppihub.app.screens.AddModulesScreen
 import org.kuppihub.app.screens.DashboardScreen
+import org.kuppihub.app.screens.KuppiListScreen
 import org.kuppihub.app.screens.LevelOneScreen
 import org.kuppihub.app.screens.LevelTwoScreen
 import org.kuppihub.app.screens.LevelThreeScreen
@@ -73,7 +75,11 @@ fun MainScreen() {
         ) {
 
             composable<DashboardRoute> {
-                DashboardScreen()
+                DashboardScreen(
+                    onModuleClick = { moduleId, code ->
+                        navController.navigate(KuppiListRoute(moduleId, code))
+                    }
+                )
             }
 
 
@@ -126,6 +132,15 @@ fun MainScreen() {
 
             // Login (Keep as is)
             composable<LoginRoute> { LoginScreen {} }
+
+
+            composable<KuppiListRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<KuppiListRoute>()
+                KuppiListScreen(
+                    moduleId = route.moduleId,
+                    moduleCode = route.moduleCode
+                )
+            }
         }
     }
 }

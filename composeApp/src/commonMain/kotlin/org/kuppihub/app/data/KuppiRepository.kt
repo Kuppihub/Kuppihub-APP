@@ -9,6 +9,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.kuppihub.app.model.Department
 import org.kuppihub.app.model.Faculty
+import org.kuppihub.app.model.KuppiResponse
 import org.kuppihub.app.model.ModuleResponse
 
 object KuppiRepository {
@@ -86,6 +87,19 @@ object KuppiRepository {
         }.body()
 
         return response
+    }
+
+    // Inside KuppiRepository object
+
+    suspend fun getKuppis(moduleId: Int): List<KuppiResponse> {
+        return try {
+            client.get("https://kuppihub.org/api/kuppis") {
+                parameter("moduleId", moduleId)
+            }.body()
+        } catch (e: Exception) {
+            println("Error fetching kuppis: ${e.message}")
+            emptyList()
+        }
     }
 
 }
