@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 object AddModulesRoute
 // This represents the Login Screen
 @Serializable
-object LoginRoute
+object ProfileRoutes
 
 // This represents the Dashboard (Main) Screen
 @Serializable

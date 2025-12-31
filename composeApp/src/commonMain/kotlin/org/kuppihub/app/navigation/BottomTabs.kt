@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 
 // 1. Define what a "Tab" looks like
@@ -14,7 +15,7 @@ sealed class BottomTab(
 ) {
     // 2. Create the specific tabs
     data object Dashboard : BottomTab("Dashboard", Icons.Default.Home, DashboardRoute)
-    data object Login : BottomTab("Login", Icons.Default.Lock, LoginRoute)
+    data object Profile : BottomTab("Profile", Icons.Default.Person, ProfileRoutes)
 
     object AddModules : BottomTab(
         route = AddModulesRoute,
@@ -24,6 +25,6 @@ sealed class BottomTab(
 
     // Helper list to loop through in the UI
     companion object {
-        val allTabs = listOf(Dashboard, Login, AddModules)
+        val allTabs = listOf(Dashboard, AddModules, Profile)
     }
 }
