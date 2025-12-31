@@ -22,9 +22,11 @@ import org.kuppihub.app.ui.components.KuppiLogo
 @Composable
 fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
     var faculties by remember { mutableStateOf<List<Faculty>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         faculties = KuppiRepository.getFaculties()
+        isLoading = false
     }
 
     // Wrapped in Scaffold to show the Logo
@@ -35,6 +37,13 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
             )
         }
     ) { p ->
+
+        Box(modifier = Modifier.padding(p).fillMaxSize()) {
+
+            if (isLoading) {
+                // Show Circle
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            } else {
         LazyColumn(contentPadding = PaddingValues(16.dp), modifier = Modifier.padding(p)) {
             items(faculties) { faculty ->
                 Card(
@@ -50,5 +59,5 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
             }
         }
     }
-}
+} }}
 
