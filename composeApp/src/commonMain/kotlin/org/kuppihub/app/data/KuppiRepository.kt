@@ -11,6 +11,8 @@ import org.kuppihub.app.model.Department
 import org.kuppihub.app.model.Faculty
 import org.kuppihub.app.model.KuppiResponse
 import org.kuppihub.app.model.ModuleResponse
+import org.kuppihub.app.model.SearchApiResponse
+import org.kuppihub.app.model.SearchModuleItem
 
 object KuppiRepository {
 
@@ -98,6 +100,25 @@ object KuppiRepository {
             }.body()
         } catch (e: Exception) {
             println("Error fetching kuppis: ${e.message}")
+            emptyList()
+        }
+    }
+
+
+    // Inside KuppiRepository object
+
+    suspend fun searchModules(query: String): List<SearchModuleItem> {
+        if (query.length < 2) return emptyList() // Don't search for 1 letter
+
+        return try {
+            // Calls: https://kuppihub.org/api/search-modules?q=cs
+            val response = client.get("https://kuppihub.org/api/search-modules") {
+                parameter("q", query)
+            }.body<SearchApiResponse>()
+
+            response.data
+        } catch (e: Exception) {
+            println("Search Error: ${e.message}")
             emptyList()
         }
     }
