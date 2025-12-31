@@ -78,6 +78,17 @@ fun MainScreen() {
                 DashboardScreen(
                     onModuleClick = { moduleId, code ->
                         navController.navigate(KuppiListRoute(moduleId, code))
+                    },
+                    onAddModuleClick = {
+                        // 👇 FIX: This mimics clicking the bottom tab directly.
+                        // It cleanly switches tabs instead of stacking screens.
+                        navController.navigate(AddModulesRoute) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 )
             }
