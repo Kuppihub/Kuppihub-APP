@@ -4,6 +4,7 @@ import com.russhwolf.settings.Settings
 // We don't need 'import com.russhwolf.settings.set' if we use explicit putString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.kuppihub.app.model.KuppiResponse
 import org.kuppihub.app.model.ModuleResponse
 
 object LocalDashboardRepo {
@@ -11,6 +12,16 @@ object LocalDashboardRepo {
 
     // Initialize Settings (Works on Android & iOS)
     private val settings: Settings = Settings()
+    private val videoCache = mutableMapOf<Int, List<KuppiResponse>>()
+
+    fun getCachedKuppis(moduleId: Int): List<KuppiResponse> {
+        return videoCache[moduleId] ?: emptyList()
+    }
+
+    fun saveKuppis(moduleId: Int, videos: List<KuppiResponse>) {
+        videoCache[moduleId] = videos
+        // TODO: Save 'videoCache' to a file/database here so it works after app restart
+    }
 
     // 1. Get all Saved Modules
     fun getSavedModules(): List<ModuleResponse> {

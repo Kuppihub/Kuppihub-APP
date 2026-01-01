@@ -1,6 +1,5 @@
 package org.kuppihub.app.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -8,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.WifiOff // Added icon for offline state
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,7 +20,6 @@ import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.data.LocalDashboardRepo
 import org.kuppihub.app.model.Faculty
 import org.kuppihub.app.model.SearchModuleItem
-import org.kuppihub.app.ui.components.KuppiLogo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,25 +32,45 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
     // UI States
     var searchQuery by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
-    var isSearching by remember { mutableStateOf(false) } // Track if search API is running
+    var isSearching by remember { mutableStateOf(false) }
+    var isOffline by remember { mutableStateOf(false) } // 👈 New state to track connection errors
 
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // 1. Initial Load (Faculties + Saved IDs)
+    // 1. Initial Load (Safe Version)
     LaunchedEffect(Unit) {
-        faculties = KuppiRepository.getFaculties()
-        savedIds = LocalDashboardRepo.getSavedModules().map { it.module.id }.toSet()
-        isLoading = false
+        try {
+            // Load local saved IDs first (this never fails)
+            savedIds = LocalDashboardRepo.getSavedModules().map { it.module.id }.toSet()
+
+            // Try fetching from internet
+            faculties = KuppiRepository.getFaculties()
+            isOffline = false
+        } catch (e: Exception) {
+            // If internet fails, just mark as offline. DON'T CRASH.
+            e.printStackTrace()
+            isOffline = true
+        } finally {
+            isLoading = false
+        }
     }
 
-    // 2. Search Logic (Runs when query changes)
+    // 2. Search Logic (Safe Version)
     LaunchedEffect(searchQuery) {
         if (searchQuery.length >= 2) {
             isSearching = true
-            searchResults = KuppiRepository.searchModules(searchQuery)
-            isSearching = false
+            try {
+                searchResults = KuppiRepository.searchModules(searchQuery)
+            } catch (e: Exception) {
+                // If search fails (no internet), just show nothing
+                e.printStackTrace()
+                searchResults = emptyList()
+                scope.launch { snackbarHostState.showSnackbar("Search failed. Check internet.") }
+            } finally {
+                isSearching = false
+            }
         } else {
             searchResults = emptyList()
         }
@@ -60,17 +79,13 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
     Scaffold(
         topBar = {
             Column {
-                // Custom Search Top Bar
                 TopAppBar(
                     title = {
-                        // Using a TextField directly in the Title for the Search Bar look
                         TextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = { Text("Search modules (e.g. 'cs' or 'math')") },
-                            modifier = Modifier
-                                .fillMaxWidth(),
-
+                            placeholder = { Text("Search modules...") },
+                            modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(8.dp),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -91,11 +106,7 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                             },
                             singleLine = true
                         )
-                    },
-                    // Show Logo above search bar if you want, or replace it.
-                    // Usually for a search screen, the search bar *is* the main thing.
-                    // But if you want the branding, put it in a Column above or handle differently.
-                    // For now, this replaces the Logo with the Search Bar effectively.
+                    }
                 )
                 if (isLoading || isSearching) {
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
@@ -106,7 +117,7 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
     ) { p ->
         Box(modifier = Modifier.padding(p).fillMaxSize()) {
 
-            // VIEW A: SEARCH RESULTS (When user is typing)
+            // VIEW A: SEARCH RESULTS
             if (searchQuery.length >= 2) {
                 if (searchResults.isEmpty() && !isSearching) {
                     Text("No modules found.", modifier = Modifier.align(Alignment.Center))
@@ -117,9 +128,6 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                     ) {
                         items(searchResults) { item ->
                             val isAlreadySaved = savedIds.contains(item.id)
-
-                            // Reuse ModuleCard logic but adapted for SearchItem
-                            // We convert SearchItem -> ModuleResponse temporarily for the Card
                             val tempModuleResponse = item.toModuleResponse()
 
                             ModuleCard(
@@ -128,10 +136,8 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                                 isInDashboardScreen = false,
                                 onActionButtonClick = {
                                     if (!isAlreadySaved) {
-                                        // Save to DB
                                         LocalDashboardRepo.addModule(tempModuleResponse)
                                         savedIds = savedIds + item.id
-
                                         scope.launch {
                                             snackbarHostState.showSnackbar("Added ${item.code} to Dashboard")
                                         }
@@ -142,14 +148,41 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                     }
                 }
             }
-
-            // VIEW B: BROWSE FACULTIES (Default View)
+            // VIEW B: BROWSE FACULTIES
             else {
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                } else {
+                }
+                // 👇 HANDLE OFFLINE STATE
+                else if (isOffline && faculties.isEmpty()) {
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(Icons.Default.WifiOff, contentDescription = "Offline", modifier = Modifier.size(48.dp), tint = Color.Gray)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("No Internet Connection", style = MaterialTheme.typography.bodyLarge)
+                        Text("Cannot load faculties.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = {
+                            // Retry Logic
+                            isLoading = true
+                            scope.launch {
+                                try {
+                                    faculties = KuppiRepository.getFaculties()
+                                    isOffline = false
+                                } catch (e: Exception) {
+                                    isOffline = true
+                                }
+                                isLoading = false
+                            }
+                        }) {
+                            Text("Retry")
+                        }
+                    }
+                }
+                else {
                     LazyColumn(contentPadding = PaddingValues(16.dp)) {
-                        // Optional: Header
                         item {
                             Text(
                                 "Browse by Faculty",
@@ -158,7 +191,6 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                                 color = MaterialTheme.colorScheme.secondary
                             )
                         }
-
                         items(faculties) { faculty ->
                             Card(
                                 onClick = { onFacultyClick(faculty.id) },

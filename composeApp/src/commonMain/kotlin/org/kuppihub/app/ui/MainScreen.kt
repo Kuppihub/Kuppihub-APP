@@ -146,7 +146,11 @@ fun MainScreen() {
             }
 
 
-            composable<ProfileRoutes> { ProfileScreen { {} }
+            composable<ProfileRoutes> {
+                ProfileScreen(
+                    onLoginClick = { /* Handle Login */ }
+                )
+            }
 
 
             composable<KuppiListRoute> { backStackEntry ->
@@ -159,5 +163,5 @@ fun MainScreen() {
             }
         }
     }
-}}
+}
 
