@@ -5,6 +5,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -16,6 +19,7 @@ import org.kuppihub.app.navigation.*
 import org.kuppihub.app.screens.*
 import org.kuppihub.app.auth.GoogleAuthService
 import org.kuppihub.app.model.KuppiUser
+import org.kuppihub.app.ui.theme.White
 
 @Composable
 fun MainScreen(
@@ -30,13 +34,33 @@ fun MainScreen(
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            // Recommendation: White is clean and provides good contrast against Blue50 background.
+            // We add a subtle top border (Blue100 / primaryContainer) to tie it into the theme.
+            val borderColor = MaterialTheme.colorScheme.primaryContainer
+
+            NavigationBar(
+                containerColor = White,
+                tonalElevation = 8.dp,
+                modifier = Modifier.drawBehind {
+                    drawLine(
+                        color = borderColor,
+                        start = Offset(0f, 0f),
+                        end = Offset(size.width, 0f),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                }
+            ) {
                 BottomTab.allTabs.forEach { tab ->
                     val isSelected = currentDestination?.hasRoute(tab.route::class) == true
                     NavigationBarItem(
                         icon = { Icon(tab.icon, contentDescription = tab.label) },
                         label = { Text(tab.label) },
                         selected = isSelected,
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer, // Highlight color
+                            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
                         onClick = {
                             navController.navigate(tab.route) {
                                 popUpTo(navController.graph.findStartDestination().id) { saveState = true }

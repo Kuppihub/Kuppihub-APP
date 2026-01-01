@@ -58,17 +58,7 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // 1. BRANDING HEADER
-            Spacer(modifier = Modifier.height(24.dp))
-            KuppiLogo(modifier = Modifier.scale(1.2f))
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "KuppiHub v1.0.0",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.secondary
-            )
 
-            Spacer(modifier = Modifier.height(32.dp))
 
             // 2. ACCOUNT CARD
             Card(
@@ -142,6 +132,21 @@ fun ProfileScreen(
             MenuOptionItem(icon = Icons.Default.Share, title = "Share App", onClick = {})
 
             Spacer(modifier = Modifier.weight(1f))
+
+
+
+
+            // 1. BRANDING HEADER
+            Spacer(modifier = Modifier.height(24.dp))
+            KuppiLogo(modifier = Modifier.scale(1.2f))
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "KuppiHub v1.0.1",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.secondary
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
 
             // 4. FOOTER
             Text("Made with ❤️ by UOM Engineering", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
