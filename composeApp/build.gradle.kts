@@ -13,12 +13,14 @@ plugins {
 }
 
 kotlin {
+    // 👇 FIX 1: Simplified androidTarget to remove deprecation warning
     androidTarget {
+        @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -28,20 +30,14 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     jvm()
-    
+
     js {
         browser()
         binaries.executable()
     }
-    
-//    @OptIn(ExperimentalWasmDsl::class)
-//    wasmJs {
-//        browser()
-//        binaries.executable()
-//    }
-//
+
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
@@ -69,7 +65,6 @@ kotlin {
             implementation(libs.kotlinx.serialization.json.v160)
             implementation(libs.firebase.auth)
             implementation(libs.firebase.common)
-
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -90,6 +85,25 @@ android {
     namespace = "org.kuppihub.app"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
+    // 👇 FIX 2: Renamed local variables (added 'env' prefix) to avoid shadowing errors
+    signingConfigs {
+        create("release") {
+            val envStoreFile = System.getenv("SIGNING_STORE_FILE")
+            val envStorePassword = System.getenv("SIGNING_STORE_PASSWORD")
+            val envKeyAlias = System.getenv("SIGNING_KEY_ALIAS")
+            val envKeyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+
+            if (envStoreFile != null && envStorePassword != null) {
+                storeFile = file(envStoreFile)
+                storePassword = envStorePassword
+                keyAlias = envKeyAlias        // Now this works!
+                keyPassword = envKeyPassword  // Now this works!
+            } else {
+                println("⚠️ Warning: Release signing keys not found in Environment Variables.")
+            }
+        }
+    }
+
     defaultConfig {
         applicationId = "org.kuppihub.app"
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -107,6 +121,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
