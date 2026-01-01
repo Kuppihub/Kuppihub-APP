@@ -1,39 +1,38 @@
 package org.kuppihub.app.data
 
 import com.russhwolf.settings.Settings
-// We don't need 'import com.russhwolf.settings.set' if we use explicit putString
+import com.russhwolf.settings.set
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.kuppihub.app.model.KuppiResponse
 import org.kuppihub.app.model.ModuleResponse
 
 object LocalDashboardRepo {
+    // Keys for storage
     private const val KEY_MODULES = "dashboard_modules"
 
     // Initialize Settings (Works on Android & iOS)
     private val settings: Settings = Settings()
-    private val videoCache = mutableMapOf<Int, List<KuppiResponse>>()
 
-    fun getCachedKuppis(moduleId: Int): List<KuppiResponse> {
-        return videoCache[moduleId] ?: emptyList()
-    }
+    // Setup JSON formatter (Safe mode)
+    private val json = Json { ignoreUnknownKeys = true }
 
-    fun saveKuppis(moduleId: Int, videos: List<KuppiResponse>) {
-        videoCache[moduleId] = videos
-        // TODO: Save 'videoCache' to a file/database here so it works after app restart
-    }
+    // ==========================================
+    // 📦 PART 1: MODULES (Dashboard)
+    // ==========================================
 
     // 1. Get all Saved Modules
     fun getSavedModules(): List<ModuleResponse> {
-        val jsonString = settings.getString(KEY_MODULES, "")
+        val jsonString = settings.getStringOrNull(KEY_MODULES)
 
-        if (jsonString.isBlank()) return emptyList()
-
-        return try {
-            // FIX: Explicitly tell it to decode a List<ModuleResponse>
-            Json.decodeFromString<List<ModuleResponse>>(jsonString)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        return if (!jsonString.isNullOrBlank()) {
+            try {
+                json.decodeFromString<List<ModuleResponse>>(jsonString)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        } else {
             emptyList()
         }
     }
@@ -42,28 +41,63 @@ object LocalDashboardRepo {
     fun addModule(module: ModuleResponse) {
         val currentList = getSavedModules().toMutableList()
 
-        // Prevent duplicates (Check by ID)
+        // Only add if it doesn't exist yet
         if (currentList.none { it.module.id == module.module.id }) {
             currentList.add(module)
-            saveList(currentList)
+            saveModuleList(currentList)
         }
     }
 
     // 3. Remove a Module
     fun removeModule(moduleId: Int) {
         val currentList = getSavedModules().toMutableList()
-
-        // Remove items that match the ID
         currentList.removeAll { it.module.id == moduleId }
-
-        saveList(currentList)
+        saveModuleList(currentList)
     }
 
-    // Helper: Save the list to local storage
-    private fun saveList(list: List<ModuleResponse>) {
-        val jsonString = Json.encodeToString(list)
+    // Helper: Save the module list to disk
+    private fun saveModuleList(list: List<ModuleResponse>) {
+        val jsonString = json.encodeToString(list)
+        settings[KEY_MODULES] = jsonString
+    }
 
-        // FIX: Use explicit 'putString' instead of 'settings[] =' to avoid inference errors
-        settings.putString(KEY_MODULES, jsonString)
+    // ==========================================
+    // 📺 PART 2: KUPPI VIDEOS (Offline Support)
+    // ==========================================
+
+    // 1. Get Cached Videos (Reads from Disk)
+    fun getCachedKuppis(moduleId: Int): List<KuppiResponse> {
+        val key = "videos_$moduleId"
+        val jsonString = settings.getStringOrNull(key)
+
+        println("DEBUG_REPO: Reading Key [$key]")
+
+        if (jsonString.isNullOrBlank()) {
+            println("DEBUG_REPO: Key [$key] is EMPTY.")
+            return emptyList()
+        }
+
+        return try {
+            val list = json.decodeFromString<List<KuppiResponse>>(jsonString)
+            println("DEBUG_REPO: Success! Loaded ${list.size} videos from disk.")
+            list
+        } catch (e: Exception) {
+            println("DEBUG_REPO: CRASH while reading! Error: ${e.message}")
+            e.printStackTrace() // Print the real error to Logcat
+            emptyList()
+        }
+    }
+
+    // 2. Save Videos to Disk
+    fun saveKuppis(moduleId: Int, videos: List<KuppiResponse>) {
+        val key = "videos_$moduleId"
+        try {
+            val jsonString = json.encodeToString(videos)
+            settings[key] = jsonString
+            println("DEBUG_REPO: Saved ${videos.size} videos to [$key]. Text length: ${jsonString.length}")
+        } catch (e: Exception) {
+            println("DEBUG_REPO: CRASH while saving! Error: ${e.message}")
+            e.printStackTrace()
+        }
     }
 }

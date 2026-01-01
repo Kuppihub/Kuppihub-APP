@@ -63,6 +63,8 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.json)
             implementation(libs.multiplatform.settings.no.arg)
+            implementation(libs.multiplatform.settings.v111)
+            implementation(libs.kotlinx.serialization.json.v160)
 
         }
         commonTest.dependencies {

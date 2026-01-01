@@ -47,21 +47,23 @@ fun KuppiListScreen(moduleId: Int, moduleCode: String, onBackClick: () -> Unit) 
         try {
             val freshData = KuppiRepository.getKuppis(moduleId)
 
-            // Update UI & Save to Cache
-            kuppis = freshData
-            LocalDashboardRepo.saveKuppis(moduleId, freshData)
-
-            // Auto-expand the first video if list was empty before
-            if (expandedId == null && freshData.isNotEmpty()) {
-                expandedId = freshData.first().id
+            // 👇 FIX: Only update if we actually got data!
+            if (freshData.isNotEmpty()) {
+                kuppis = freshData
+                LocalDashboardRepo.saveKuppis(moduleId, freshData)
+                isOffline = false
+            } else {
+                // If freshData is empty, it might be a network error that was "swallowed".
+                // So we do NOTHING. We keep showing the cached 'kuppis'.
+                println("DEBUG: Fresh data was empty, keeping cached data.")
             }
-            isOffline = false
 
         } catch (e: Exception) {
             e.printStackTrace()
             isOffline = true
+            // If we have cached data, tell the user
             if (kuppis.isNotEmpty()) {
-                scope.launch { snackbarHostState.showSnackbar("Offline Mode: Showing cached videos") }
+                scope.launch { snackbarHostState.showSnackbar("Offline: Showing cached videos") }
             }
         } finally {
             isLoading = false
