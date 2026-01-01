@@ -1,42 +1,30 @@
 package org.kuppihub.app.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.kuppihub.app.auth.GoogleAuthService
 import org.kuppihub.app.model.KuppiUser
 import org.kuppihub.app.ui.components.KuppiLogo
+import org.kuppihub.app.ui.components.ProfileCard
+import org.kuppihub.app.ui.components.ProfileMenu
 import org.kuppihub.app.ui.theme.Blue50
 import org.kuppihub.app.ui.theme.KuppiGradients
-import org.kuppihub.app.ui.theme.White
 
 @Composable
 fun ProfileScreen(
-    user: KuppiUser?,           // 👈 The unified user (null = guest)
+    user: KuppiUser?,
     onLoginClick: () -> Unit,
-    onLogoutClick: () -> Unit,  // 👈 ADDED THIS PARAMETER
-    authService: GoogleAuthService? = null, // Optional, can be removed if not used directly
-    desktopUser: String? = null // Optional, mostly redundant now that we use 'user'
+    onLogoutClick: () -> Unit,
+    authService: GoogleAuthService? = null,
+    desktopUser: String? = null
 ) {
-
-    // Simplest logic: If we have a user object, we are logged in.
-    val isLoggedIn = user != null
-
     Scaffold(
         containerColor = Blue50,
         topBar = {
@@ -46,7 +34,6 @@ fun ProfileScreen(
                     .background(KuppiGradients.MainHeader)
             ) {
                 // TIGHT TOOLBAR
-
             }
         }
     ) { p ->
@@ -58,90 +45,30 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-
-
             // 2. ACCOUNT CARD
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = White),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    if (isLoggedIn && user != null) {
-                        // LOGGED IN VIEW
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = "User",
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(user.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                        Text(user.email, style = MaterialTheme.typography.bodyMedium)
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = onLogoutClick, // 👈 Now this works!
-                            colors = ButtonDefaults.buttonColors(containerColor = Blue50)
-                        ) {
-                            Text("Log Out", color = MaterialTheme.colorScheme.onSurface)
-                        }
-                    } else {
-                        // GUEST VIEW
-                        Text(
-                            "Join the Community",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            "Log in to sync your modules across devices.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = onLoginClick,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                        ) {
-                            Text("Login / Sign Up")
-                        }
-                    }
-                }
-            }
+            ProfileCard(
+                user = user,
+                onLoginClick = onLoginClick,
+                onLogoutClick = onLogoutClick
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // 3. SETTINGS & INFO MENU
-            Text(
-                "General",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.align(Alignment.Start).padding(bottom = 8.dp)
+            ProfileMenu(
+                onSettingsClick = {},
+                onAboutClick = {},
+                onShareClick = {}
             )
 
-            MenuOptionItem(icon = Icons.Default.Settings, title = "App Settings", onClick = {})
-            MenuOptionItem(icon = Icons.Default.Info, title = "About KuppiHub", onClick = {})
-            MenuOptionItem(icon = Icons.Default.Share, title = "Share App", onClick = {})
-
             Spacer(modifier = Modifier.weight(1f))
-
-
-
 
             // 1. BRANDING HEADER
             Spacer(modifier = Modifier.height(24.dp))
             KuppiLogo(modifier = Modifier.scale(1.2f))
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "KuppiHub v1.0.1",
+                text = "KuppiHub v1.0.2",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.secondary
             )
@@ -154,31 +81,3 @@ fun ProfileScreen(
         }
     }
 }
-
-// Helper Component for Menu Items
-@Composable
-fun MenuOptionItem(icon: ImageVector, title: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(White),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
-    }
-}
-
-// Helper to scale modifier
-fun Modifier.scale(scale: Float): Modifier = this.then(Modifier.graphicsLayer(scaleX = scale, scaleY = scale))
