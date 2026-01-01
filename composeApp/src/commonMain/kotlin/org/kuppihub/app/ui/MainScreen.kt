@@ -27,11 +27,15 @@ import org.kuppihub.app.screens.LevelOneScreen
 import org.kuppihub.app.screens.LevelTwoScreen
 import org.kuppihub.app.screens.LevelThreeScreen
 import org.kuppihub.app.screens.ProfileScreen
+import org.kuppihub.app.auth.GoogleAuthService
 
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onGoogleLoginClick: () -> Unit = {},
+               authService: GoogleAuthService? = null
+) {
     val navController = rememberNavController()
+
 
     // Get current route to highlight correct tab
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -148,7 +152,8 @@ fun MainScreen() {
 
             composable<ProfileRoutes> {
                 ProfileScreen(
-                    onLoginClick = { /* Handle Login */ }
+                    onLoginClick = onGoogleLoginClick,
+                    authService = authService
                 )
             }
 

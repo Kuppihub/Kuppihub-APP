@@ -17,3 +17,10 @@ captures
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
+*google-services.json
+*GoogleService-Info.plist
+
+# 🔴 KEYSTORE FILES
+*.jks
+*.keystore
+*.pem

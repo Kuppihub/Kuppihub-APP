@@ -18,13 +18,20 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
+import org.kuppihub.app.auth.GoogleAuthService
 import org.kuppihub.app.ui.components.KuppiLogo // 👈 Your custom logo
 
+
 @Composable
-fun ProfileScreen(onLoginClick: () -> Unit) {
+fun ProfileScreen(
+    onLoginClick: () -> Unit,
+    authService: GoogleAuthService?
+) {
     // Mock State: In a real app, you'd get this from your Auth Repository
-    val isLoggedIn by remember { mutableStateOf(false) }
+    val currentUser = remember { Firebase.auth.currentUser }
+    val isLoggedIn = currentUser != null
 
     Column(
         modifier = Modifier
@@ -65,6 +72,7 @@ fun ProfileScreen(onLoginClick: () -> Unit) {
                         tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Spacer(modifier = Modifier.height(8.dp))
+                    Text(currentUser?.displayName ?: "Unknown User")
                     Text("Sangeeth", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                     Text("student@kuppihub.org", style = MaterialTheme.typography.bodyMedium)
                     Spacer(modifier = Modifier.height(16.dp))
