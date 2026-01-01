@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import org.kuppihub.app.auth.GoogleAuthService
 import org.kuppihub.app.model.KuppiUser
 import org.kuppihub.app.ui.components.KuppiLogo
+import org.kuppihub.app.ui.theme.Blue50
+import org.kuppihub.app.ui.theme.KuppiGradients
+import org.kuppihub.app.ui.theme.White
 
 @Composable
 fun ProfileScreen(
@@ -34,101 +37,116 @@ fun ProfileScreen(
     // Simplest logic: If we have a user object, we are logged in.
     val isLoggedIn = user != null
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        // 1. BRANDING HEADER
-        Spacer(modifier = Modifier.height(24.dp))
-        KuppiLogo(modifier = Modifier.scale(1.2f))
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "KuppiHub v1.0.0",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.secondary
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // 2. ACCOUNT CARD
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-            shape = RoundedCornerShape(16.dp)
-        ) {
+    Scaffold(
+        containerColor = Blue50,
+        topBar = {
             Column(
-                modifier = Modifier.padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(KuppiGradients.MainHeader)
             ) {
-                if (isLoggedIn && user != null) {
-                    // LOGGED IN VIEW
-                    Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = "User",
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
+                // TIGHT TOOLBAR
 
-                    Text(user.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    Text(user.email, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    ) { p ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(p)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = onLogoutClick, // 👈 Now this works!
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface)
-                    ) {
-                        Text("Log Out", color = MaterialTheme.colorScheme.onSurface)
-                    }
-                } else {
-                    // GUEST VIEW
-                    Text(
-                        "Join the Community",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "Log in to sync your modules across devices.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = onLoginClick,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                    ) {
-                        Text("Login / Sign Up")
+            // 1. BRANDING HEADER
+            Spacer(modifier = Modifier.height(24.dp))
+            KuppiLogo(modifier = Modifier.scale(1.2f))
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "KuppiHub v1.0.0",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.secondary
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // 2. ACCOUNT CARD
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = White),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if (isLoggedIn && user != null) {
+                        // LOGGED IN VIEW
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "User",
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(user.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Text(user.email, style = MaterialTheme.typography.bodyMedium)
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = onLogoutClick, // 👈 Now this works!
+                            colors = ButtonDefaults.buttonColors(containerColor = Blue50)
+                        ) {
+                            Text("Log Out", color = MaterialTheme.colorScheme.onSurface)
+                        }
+                    } else {
+                        // GUEST VIEW
+                        Text(
+                            "Join the Community",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "Log in to sync your modules across devices.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = onLoginClick,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text("Login / Sign Up")
+                        }
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 3. SETTINGS & INFO MENU
+            Text(
+                "General",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.align(Alignment.Start).padding(bottom = 8.dp)
+            )
+
+            MenuOptionItem(icon = Icons.Default.Settings, title = "App Settings", onClick = {})
+            MenuOptionItem(icon = Icons.Default.Info, title = "About KuppiHub", onClick = {})
+            MenuOptionItem(icon = Icons.Default.Share, title = "Share App", onClick = {})
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // 4. FOOTER
+            Text("Made with ❤️ by UOM Engineering", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+            Spacer(modifier = Modifier.height(16.dp))
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // 3. SETTINGS & INFO MENU
-        Text(
-            "General",
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.align(Alignment.Start).padding(bottom = 8.dp)
-        )
-
-        MenuOptionItem(icon = Icons.Default.Settings, title = "App Settings", onClick = {})
-        MenuOptionItem(icon = Icons.Default.Info, title = "About KuppiHub", onClick = {})
-        MenuOptionItem(icon = Icons.Default.Share, title = "Share App", onClick = {})
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // 4. FOOTER
-        Text("Made with ❤️ by UOM Engineering", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
@@ -146,7 +164,7 @@ fun MenuOptionItem(icon: ImageVector, title: String, onClick: () -> Unit) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+                .background(White),
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)

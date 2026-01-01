@@ -26,6 +26,10 @@ import kotlinx.coroutines.launch
 import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.data.LocalDashboardRepo
 import org.kuppihub.app.model.KuppiResponse
+import org.kuppihub.app.ui.components.KuppiLogo
+import org.kuppihub.app.ui.theme.Blue50
+import org.kuppihub.app.ui.theme.KuppiGradients
+import org.kuppihub.app.ui.theme.White
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,28 +75,46 @@ fun KuppiListScreen(moduleId: Int, moduleCode: String, onBackClick: () -> Unit) 
     }
 
     Scaffold(
+        containerColor = Blue50,
         topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text("$moduleCode Videos")
-                        if (isOffline) {
-                            Text("Offline Mode", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(KuppiGradients.MainHeader)
+            ) {
+                // TIGHT TOOLBAR
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .padding(horizontal = 4.dp), // Less padding for navigation icon
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = onBackClick) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                        }
+                        KuppiLogo(showText = false)
+                        Spacer(Modifier.width(12.dp))
+                        Column {
+                            Text("$moduleCode Videos", style = MaterialTheme.typography.titleMedium)
+                            if (isOffline) {
+                                Text("Offline Mode", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
+                            }
                         }
                     }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    
+                    if (isOffline) {
+                         Box(modifier = Modifier.align(Alignment.CenterEnd).padding(end = 16.dp)) {
+                             Icon(Icons.Default.WifiOff, "Offline", tint = MaterialTheme.colorScheme.error)
+                         }
                     }
-                },
-                actions = {
-                    if (isOffline) Icon(Icons.Default.WifiOff, "Offline", tint = MaterialTheme.colorScheme.error, modifier = Modifier.padding(end = 16.dp))
                 }
-            )
+            }
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { p ->
         Box(modifier = Modifier.padding(p).fillMaxSize()) {
 
@@ -141,7 +163,7 @@ fun KuppiExpandableCard(
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp), // Slightly lower elevation is cleaner
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = White), // White for card bg
         modifier = Modifier.fillMaxWidth()
     ) {
         Column {
@@ -191,7 +213,7 @@ fun KuppiExpandableCard(
                         .fillMaxWidth()
                         .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                 ) {
-                    Divider(color = Color(0xFFDBEAFE), thickness = 1.dp)
+                    HorizontalDivider(color = Color(0xFFDBEAFE), thickness = 1.dp)
                     Spacer(modifier = Modifier.height(16.dp))
 
                     if (!kuppi.description.isNullOrBlank()) {

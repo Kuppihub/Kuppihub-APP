@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch // Needed for the Snackbar popup
@@ -22,6 +23,9 @@ import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.data.LocalDashboardRepo
 import org.kuppihub.app.model.ModuleResponse
 import org.kuppihub.app.ui.components.KuppiLogo
+import org.kuppihub.app.ui.theme.Blue50
+import org.kuppihub.app.ui.theme.KuppiGradients
+import org.kuppihub.app.ui.theme.White
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,23 +72,34 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String,onBa
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = {
-            // 👈 2. Updated Title with Logo
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                KuppiLogo(showText = false) // Blue Book Icon
-                Spacer(Modifier.width(12.dp))
-                Text(title, style = MaterialTheme.typography.titleMedium)
-            }
-        },
-            navigationIcon = {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back"
-                    )
+        containerColor = Blue50,
+        topBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(KuppiGradients.MainHeader)
+            ) {
+                // TIGHT TOOLBAR
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .padding(horizontal = 4.dp), // Less padding for navigation icon
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = onBackClick) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                        }
+                        KuppiLogo(showText = false)
+                        Spacer(Modifier.width(12.dp))
+                        Text(title, style = MaterialTheme.typography.titleMedium)
+                    }
                 }
             }
-        ) },
+        },
         // 2. Add the Snackbar Host here so the popup can appear
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { p ->
@@ -139,7 +154,7 @@ fun ModuleCard(
 ) {
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = White)
     ) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),

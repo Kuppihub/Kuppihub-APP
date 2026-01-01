@@ -1,5 +1,6 @@
 package org.kuppihub.app.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,6 +21,10 @@ import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.data.LocalDashboardRepo
 import org.kuppihub.app.model.Faculty
 import org.kuppihub.app.model.SearchModuleItem
+import org.kuppihub.app.ui.components.KuppiLogo
+import org.kuppihub.app.ui.theme.Blue50
+import org.kuppihub.app.ui.theme.KuppiGradients
+import org.kuppihub.app.ui.theme.White
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,37 +82,49 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
     }
 
     Scaffold(
+        containerColor = Blue50,
         topBar = {
-            Column {
-                TopAppBar(
-                    title = {
-                        TextField(
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            placeholder = { Text("Search modules...") },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            ),
-                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                            trailingIcon = {
-                                if (searchQuery.isNotEmpty()) {
-                                    IconButton(onClick = {
-                                        searchQuery = ""
-                                        focusManager.clearFocus()
-                                    }) {
-                                        Icon(Icons.Default.Close, contentDescription = "Clear")
-                                    }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(KuppiGradients.MainHeader)
+            ) {
+                // TIGHT TOOLBAR with Logo
+
+
+                // Search Bar in the Header
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    TextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder = { Text("Search modules...") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = White,
+                            unfocusedContainerColor = White,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = {
+                                    searchQuery = ""
+                                    focusManager.clearFocus()
+                                }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Clear")
                                 }
-                            },
-                            singleLine = true
-                        )
-                    }
-                )
+                            }
+                        },
+                        singleLine = true
+                    )
+                }
+                
                 if (isLoading || isSearching) {
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
@@ -195,7 +212,7 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                             Card(
                                 onClick = { onFacultyClick(faculty.id) },
                                 modifier = Modifier.padding(bottom = 8.dp).fillMaxWidth(),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                                colors = CardDefaults.cardColors(containerColor = White) // Use White card bg
                             ) {
                                 Column(Modifier.padding(16.dp)) {
                                     Text(faculty.name, style = MaterialTheme.typography.titleMedium)
