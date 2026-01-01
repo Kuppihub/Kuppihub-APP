@@ -53,17 +53,21 @@ fun DashboardScreen(
 
         // 2.  CUSTOM GRADIENT HEADER
         topBar = {
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(KuppiGradients.MainHeader) // The Gradient Brush
-                    .statusBarsPadding()
-                    .padding(vertical = 12.dp, horizontal = 16.dp),
-                contentAlignment = Alignment.CenterStart
+                    .background(KuppiGradients.MainHeader)
             ) {
-                // You might need to adjust KuppiLogo to handle a transparent background
-                // or just place it here.
-                KuppiLogo()
+                // 2. TIGHT TOOLBAR
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp) // 👈 Fixed Compact Height (Standard is 56dp or 64dp, 48dp is very tight)
+                        .padding(horizontal = 16.dp), // Only side padding, NO vertical padding
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    KuppiLogo()
+                }
             }
         }
     ) { p ->
