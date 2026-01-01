@@ -18,20 +18,21 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.auth.auth
 import org.kuppihub.app.auth.GoogleAuthService
-import org.kuppihub.app.ui.components.KuppiLogo // 👈 Your custom logo
-
+import org.kuppihub.app.model.KuppiUser
+import org.kuppihub.app.ui.components.KuppiLogo
 
 @Composable
 fun ProfileScreen(
+    user: KuppiUser?,           // 👈 The unified user (null = guest)
     onLoginClick: () -> Unit,
-    authService: GoogleAuthService?
+    onLogoutClick: () -> Unit,  // 👈 ADDED THIS PARAMETER
+    authService: GoogleAuthService? = null, // Optional, can be removed if not used directly
+    desktopUser: String? = null // Optional, mostly redundant now that we use 'user'
 ) {
-    // Mock State: In a real app, you'd get this from your Auth Repository
-    val currentUser = remember { Firebase.auth.currentUser }
-    val isLoggedIn = currentUser != null
+
+    // Simplest logic: If we have a user object, we are logged in.
+    val isLoggedIn = user != null
 
     Column(
         modifier = Modifier
@@ -43,7 +44,7 @@ fun ProfileScreen(
 
         // 1. BRANDING HEADER
         Spacer(modifier = Modifier.height(24.dp))
-        KuppiLogo(modifier = Modifier.scale(1.2f)) // Bigger Logo
+        KuppiLogo(modifier = Modifier.scale(1.2f))
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "KuppiHub v1.0.0",
@@ -53,7 +54,7 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // 2. ACCOUNT CARD (Login or User Profile)
+        // 2. ACCOUNT CARD
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -63,7 +64,7 @@ fun ProfileScreen(
                 modifier = Modifier.padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (isLoggedIn) {
+                if (isLoggedIn && user != null) {
                     // LOGGED IN VIEW
                     Icon(
                         imageVector = Icons.Default.AccountCircle,
@@ -72,18 +73,19 @@ fun ProfileScreen(
                         tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(currentUser?.displayName ?: "Unknown User")
-                    Text("Sangeeth", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    Text("student@kuppihub.org", style = MaterialTheme.typography.bodyMedium)
+
+                    Text(user.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(user.email, style = MaterialTheme.typography.bodyMedium)
+
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
-                        onClick = { /* Handle Logout */ },
+                        onClick = onLogoutClick, // 👈 Now this works!
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface)
                     ) {
                         Text("Log Out", color = MaterialTheme.colorScheme.onSurface)
                     }
                 } else {
-                    // GUEST VIEW (Login Prompt)
+                    // GUEST VIEW
                     Text(
                         "Join the Community",
                         style = MaterialTheme.typography.titleMedium,
@@ -122,7 +124,7 @@ fun ProfileScreen(
         MenuOptionItem(icon = Icons.Default.Info, title = "About KuppiHub", onClick = {})
         MenuOptionItem(icon = Icons.Default.Share, title = "Share App", onClick = {})
 
-        Spacer(modifier = Modifier.weight(1f)) // Pushes content up
+        Spacer(modifier = Modifier.weight(1f))
 
         // 4. FOOTER
         Text("Made with ❤️ by UOM Engineering", style = MaterialTheme.typography.labelSmall, color = Color.Gray)

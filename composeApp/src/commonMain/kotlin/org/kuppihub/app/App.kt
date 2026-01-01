@@ -9,6 +9,14 @@ import org.kuppihub.app.ui.MainScreen
 @Preview
 fun App() {
     MaterialTheme {
-        MainScreen()
+        MainScreen(
+            currentUser = null, // Default to Guest for the root app preview
+            onGoogleLoginClick = {
+                println("Login clicked in App wrapper")
+            },
+            onLogoutClick = {
+                println("Logout clicked in App wrapper")
+            }
+        )
     }
 }

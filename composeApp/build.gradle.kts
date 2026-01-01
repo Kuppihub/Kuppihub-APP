@@ -78,6 +78,10 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.cio)
+            implementation(libs.firebase.admin)
+            implementation(libs.ktor.server.netty)
+            implementation(libs.ktor.server.core)
+            implementation(libs.google.auth.library.oauth2.http)
         }
     }
 }
