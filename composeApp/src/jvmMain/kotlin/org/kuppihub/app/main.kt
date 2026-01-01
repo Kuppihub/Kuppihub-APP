@@ -14,31 +14,36 @@ import org.kuppihub.app.ui.MainScreen
 fun main() = application {
     val desktopAuth = DesktopGoogleAuth()
 
-    // 1. Manage State Here
     var desktopUser by remember { mutableStateOf<org.kuppihub.app.model.KuppiUser?>(null) }
     val scope = rememberCoroutineScope()
 
     Window(onCloseRequest = ::exitApplication, title = "KuppiHub") {
         MainScreen(
-            currentUser = desktopUser, // 👈 Pass the state
+            currentUser = desktopUser,
             onGoogleLoginClick = {
                 scope.launch {
-                    val code = desktopAuth.signIn()
-                    if (code != null) {
-                        println("✅ Login Success!")
+                    println("🚀 Starting Login...")
 
-                        // 2. UPDATE UI INSTANTLY
-                        // (In a real app, you'd exchange 'code' for 'name' via API)
-                        // For now, let's prove the UI works:
-                        desktopUser = org.kuppihub.app.model.KuppiUser(
-                            name = "Geeth Nipun",
-                            email = "geeth@kuppihub.org"
-                        )
+                    // 1. Open Browser & Get Code
+                    val code = desktopAuth.signIn()
+
+                    if (code != null) {
+                        println("✅ Code received! Fetching Profile...")
+
+                        // 2. Fetch the REAL User Info (Name, Email, Photo)
+                        val realUser = desktopAuth.getRealUser(code)
+
+                        if (realUser != null) {
+                            println("✅ Hello, ${realUser.name}")
+                            desktopUser = realUser
+                        } else {
+                            println("❌ Failed to get profile")
+                        }
                     }
                 }
             },
             onLogoutClick = {
-                desktopUser = null // Simple logout
+                desktopUser = null
             }
         )
     }
