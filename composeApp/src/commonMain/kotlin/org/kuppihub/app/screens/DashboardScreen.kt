@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +21,7 @@ import org.kuppihub.app.ui.theme.Blue50
 import org.kuppihub.app.ui.theme.White
 import org.kuppihub.app.viewmodel.DashboardViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel,
@@ -27,22 +29,44 @@ fun DashboardScreen(
     onModuleClick: (Int, String) -> Unit,
     onAddModuleClick: () -> Unit
 ) {
-    // ✅ FIX 1: Observe the ViewModel's state instead of creating local state
-    // This ensures that when ViewModel updates (e.g. after delete), the UI updates automatically.
     val displayModules by viewModel.dashboardModules.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // ✅ FIX 2: Only trigger the load function. Do NOT fetch data manually here.
     LaunchedEffect(userId) {
-        // This handles everything: Guest mode, Sync, and Loading
         viewModel.loadUserDashboard(userId)
     }
     LaunchedEffect(Unit) {
         viewModel.snackbarEvent.collect { message ->
             snackbarHostState.showSnackbar(message)
         }
+    }
+
+    var showDeleteDialog by remember { mutableStateOf<Pair<Int, String>?>(null) } // Store ID and Code
+
+    if (showDeleteDialog != null) {
+        val (moduleId, moduleCode) = showDeleteDialog!!
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = null },
+            title = { Text("Remove Module?") },
+            text = { Text("Are you sure you want to remove $moduleCode from your dashboard?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.removeModule(moduleId, userId)
+                        showDeleteDialog = null
+                    }
+                ) {
+                    Text("Yes, Remove", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -77,13 +101,9 @@ fun DashboardScreen(
     ) { p ->
         Box(modifier = Modifier.padding(p).fillMaxSize()) {
 
-            // 1. Loading State
             if (isLoading && displayModules.isEmpty()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-
-            // 2. Empty State
-            else if (displayModules.isEmpty()) {
+            } else if (displayModules.isEmpty()) {
                 Column(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -119,15 +139,11 @@ fun DashboardScreen(
                         }
                     }
                 }
-            }
-
-            // 3. List of Modules
-            else {
+            } else {
                 LazyColumn(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Show error banner if sync failed (but we still show cached data)
                     if (errorMessage != null) {
                         item {
                             Text(
@@ -139,23 +155,56 @@ fun DashboardScreen(
                         }
                     }
 
-                    items(displayModules) { item ->
-                        Box(
-                            modifier = Modifier
-                                .clickable { onModuleClick(item.module.id, item.module.code) }
-                        ) {
-                            // Make sure your ModuleCard is using the correct imports
-                            ModuleCard(
-                                item = item,
-                                isAdded = true,
-                                isInDashboardScreen = true,
-                                onActionButtonClick = {
-                                    // ✅ FIX 3: This now updates the ViewModel,
-                                    // and because of FIX 1, the UI will disappear instantly!
-                                    viewModel.removeModule(item.module.id, userId)
+                    items(displayModules, key = { it.module.id }) { item ->
+                        val dismissState = rememberSwipeToDismissBoxState(
+                            confirmValueChange = {
+                                if (it == SwipeToDismissBoxValue.EndToStart || it == SwipeToDismissBoxValue.StartToEnd) {
+                                    showDeleteDialog = item.module.id to item.module.code
+                                    false // Don't dismiss immediately, wait for dialog
+                                } else {
+                                    false
                                 }
-                            )
-                        }
+                            }
+                        )
+
+                        SwipeToDismissBox(
+                            state = dismissState,
+                            backgroundContent = {
+                                val alignment = when (dismissState.dismissDirection) {
+                                    SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+                                    SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
+                                    else -> Alignment.CenterEnd
+                                }
+                                // Changed background color to Transparent (or match theme container)
+                                // Only icon is Red
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.Transparent, RoundedCornerShape(8.dp))
+                                        .padding(horizontal = 20.dp),
+                                    contentAlignment = alignment
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = MaterialTheme.colorScheme.error // Use error color (usually Red)
+                                    )
+                                }
+                            },
+                            content = {
+                                Box(
+                                    modifier = Modifier
+                                        .clickable { onModuleClick(item.module.id, item.module.code) }
+                                ) {
+                                    ModuleCard(
+                                        item = item,
+                                        isAdded = true,
+                                        isInDashboardScreen = true,
+                                        onActionButtonClick = { }
+                                    )
+                                }
+                            }
+                        )
                     }
                 }
             }

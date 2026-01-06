@@ -208,13 +208,7 @@ fun ModuleCard(
             // --- CHANGED LOGIC HERE ---
             if (isInDashboardScreen) {
                 // Case A: We are in Dashboard -> Show Delete Button
-                IconButton(onClick = onActionButtonClick) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Remove",
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
+                // REMOVED as per user request (Swipe to delete implemented in DashboardScreen)
             } else {
                 // Case B: We are in Level 3
                 if (isAdded) {
