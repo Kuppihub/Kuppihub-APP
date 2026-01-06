@@ -126,7 +126,13 @@ fun MainScreen(
                     user = currentUser,
                     onLoginClick = onGoogleLoginClick,
                     onLogoutClick = onLogoutClick,
-                    authService = authService
+                    authService = authService,
+                    onTutorsClick = {
+                        navController.navigate(TutorsRoute)
+                    },
+                    onAddKuppiClick = {
+                        navController.navigate(AddKuppiRoute)
+                    }
                 )
             }
 
@@ -134,6 +140,14 @@ fun MainScreen(
             composable<KuppiListRoute> { backStackEntry ->
                 val route = backStackEntry.toRoute<KuppiListRoute>()
                 KuppiListScreen(route.moduleId, route.moduleCode, onBackClick = { navController.popBackStack() })
+            }
+
+            composable<TutorsRoute> {
+                TutorsScreen(onBackClick = { navController.popBackStack() })
+            }
+
+            composable<AddKuppiRoute> {
+                AddNewKuppiScreen(onBackClick = { navController.popBackStack() })
             }
         }
     }

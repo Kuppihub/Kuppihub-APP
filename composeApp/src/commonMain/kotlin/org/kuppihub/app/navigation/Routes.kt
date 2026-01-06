@@ -32,3 +32,9 @@ data class LevelThreeRoute(
 
 @Serializable
 data class KuppiListRoute(val moduleId: Int, val moduleCode: String)
+
+@Serializable
+object TutorsRoute
+
+@Serializable
+object AddKuppiRoute

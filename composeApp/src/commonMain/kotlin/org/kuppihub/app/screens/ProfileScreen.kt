@@ -23,7 +23,9 @@ fun ProfileScreen(
     onLoginClick: () -> Unit,
     onLogoutClick: () -> Unit,
     authService: GoogleAuthService? = null,
-    desktopUser: String? = null
+    desktopUser: String? = null,
+    onTutorsClick: () -> Unit,
+    onAddKuppiClick: () -> Unit
 ) {
     Scaffold(
         containerColor = Blue50,
@@ -58,7 +60,9 @@ fun ProfileScreen(
             ProfileMenu(
                 onSettingsClick = {},
                 onAboutClick = {},
-                onShareClick = {}
+                onShareClick = {},
+                onTutorsClick = onTutorsClick,
+                onAddKuppiClick = onAddKuppiClick,
             )
 
             Spacer(modifier = Modifier.weight(1f))
