@@ -8,6 +8,7 @@ import org.kuppihub.app.ui.MainScreen
 @Composable
 @Preview
 fun App() {
+
     MaterialTheme {
         MainScreen(
             currentUser = null, // Default to Guest for the root app preview

@@ -65,6 +65,11 @@ kotlin {
             implementation(libs.kotlinx.serialization.json.v160)
             implementation(libs.firebase.auth)
             implementation(libs.firebase.common)
+            implementation(libs.kamel.image.default)
+
+
+
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

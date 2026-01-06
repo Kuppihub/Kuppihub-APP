@@ -7,6 +7,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
@@ -20,6 +21,8 @@ import org.kuppihub.app.model.ModuleResponse
 import org.kuppihub.app.model.SearchApiResponse
 import org.kuppihub.app.model.SearchModuleItem
 import org.kuppihub.app.model.SyncUserRequest
+import org.kuppihub.app.model.Tutor
+import org.kuppihub.app.model.TutorResponse
 import org.kuppihub.app.model.UpdateDashboardRequest
 
 object KuppiRepository {
@@ -241,6 +244,24 @@ object KuppiRepository {
             }
         }
         return true // Guest mode is always "Success" (Local)
+    }
+
+    suspend fun getTutors(): List<Tutor> {
+        return try {
+            // 1. Get the raw string first (ignores the wrong Content-Type header)
+            val responseString = client.get("https://kuppihub.org/api/tutors").bodyAsText()
+
+            // 2. Manually parse it into your object
+            val jsonParser = Json { ignoreUnknownKeys = true }
+            val response = jsonParser.decodeFromString<TutorResponse>(responseString)
+
+            // 3. Sort and return
+            response.students.sortedByDescending { it.videoCount }
+        } catch (e: Exception) {
+            println("⚠️ Failed to fetch tutors: ${e.message}")
+            e.printStackTrace()
+            emptyList()
+        }
     }
 
 
