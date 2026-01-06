@@ -41,13 +41,16 @@ jobs:
 
       # Build
       - run: chmod +x gradlew
-      - run: ./gradlew :composeApp:assembleDebug
+
+      - run: ./gradlew clean :composeApp:assembleDebug --no-configuration-cache
+
       - env:
           SIGNING_STORE_FILE: ${{ steps.decode_keystore.outputs.filePath }}
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-        run: ./gradlew :composeApp:assembleRelease
+        run: ./gradlew :composeApp:assembleRelease --no-configuration-cache
+
 
       # 👇 ADD THIS STEP: Upload Artifacts (Runs on EVERY push)
       - name: Upload APK Artifacts
