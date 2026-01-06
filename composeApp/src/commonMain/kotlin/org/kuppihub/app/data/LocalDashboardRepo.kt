@@ -56,7 +56,7 @@ object LocalDashboardRepo {
     }
 
     // Helper: Save the module list to disk
-    private fun saveModuleList(list: List<ModuleResponse>) {
+    fun saveModuleList(list: List<ModuleResponse>) {
         val jsonString = json.encodeToString(list)
         settings[KEY_MODULES] = jsonString
     }

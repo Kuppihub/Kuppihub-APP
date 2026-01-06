@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -20,6 +21,7 @@ import org.kuppihub.app.screens.*
 import org.kuppihub.app.auth.GoogleAuthService
 import org.kuppihub.app.model.KuppiUser
 import org.kuppihub.app.ui.theme.White
+import org.kuppihub.app.viewmodel.DashboardViewModel
 
 @Composable
 fun MainScreen(
@@ -31,6 +33,7 @@ fun MainScreen(
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
+    val dashboardViewModel = remember { DashboardViewModel() }
 
     Scaffold(
         bottomBar = {
@@ -78,9 +81,16 @@ fun MainScreen(
             startDestination = DashboardRoute,
             modifier = Modifier.padding(innerPadding)
         ) {
+            // 1. DASHBOARD
             composable<DashboardRoute> {
+                // ✅ ALWAYS show the dashboard.
+                // We pass 'currentUser?.id' which might be null (Guest) or "123" (Logged In).
                 DashboardScreen(
-                    onModuleClick = { moduleId, code -> navController.navigate(KuppiListRoute(moduleId, code)) },
+                    viewModel = dashboardViewModel,
+                    userId = currentUser?.id,
+                    onModuleClick = { moduleId, code ->
+                        navController.navigate(KuppiListRoute(moduleId, code))
+                    },
                     onAddModuleClick = {
                         navController.navigate(AddModulesRoute) {
                             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
@@ -89,10 +99,14 @@ fun MainScreen(
                         }
                     }
                 )
-            }
+            }// ✅ CRITICAL: This bracket closes DashboardRoute
+
+            // 2. ADD MODULES
             composable<AddModulesRoute> {
                 AddModulesScreen(onFacultyClick = { navController.navigate(LevelOneRoute(it)) })
             }
+
+            // 3. HIERARCHY SCREENS
             composable<LevelOneRoute> { backStackEntry ->
                 val route = backStackEntry.toRoute<LevelOneRoute>()
                 LevelOneScreen(route.facultyId, onItemClick = { navController.navigate(LevelTwoRoute(route.facultyId, it)) }, onBackClick = { navController.popBackStack() })
@@ -106,16 +120,17 @@ fun MainScreen(
                 LevelThreeScreen(route.facultyId, route.childId, route.semesterId, onBackClick = { navController.popBackStack() })
             }
 
-            // 👇 THIS IS THE PART THAT USES YOUR ACCOUNT CARD
+            // 4. PROFILE
             composable<ProfileRoutes> {
                 ProfileScreen(
-                    user = currentUser,          // Passing the unified user
+                    user = currentUser,
                     onLoginClick = onGoogleLoginClick,
                     onLogoutClick = onLogoutClick,
                     authService = authService
                 )
             }
 
+            // 5. KUPPI LIST
             composable<KuppiListRoute> { backStackEntry ->
                 val route = backStackEntry.toRoute<KuppiListRoute>()
                 KuppiListScreen(route.moduleId, route.moduleCode, onBackClick = { navController.popBackStack() })

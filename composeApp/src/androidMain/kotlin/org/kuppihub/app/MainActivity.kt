@@ -11,6 +11,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.launch
 import org.kuppihub.app.auth.AndroidGoogleAuth
+import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.model.KuppiUser
 import org.kuppihub.app.ui.MainScreen
 
@@ -28,9 +29,21 @@ class MainActivity : ComponentActivity() {
         val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK && result.data != null) {
                 lifecycleScope.launch {
-                    val user = googleAuth.handleLoginResult(result.data!!)
-                    if (user != null) {
-                        println("LOGIN SUCCESS: ${user.displayName}")
+                    val firebaseUser = googleAuth.handleLoginResult(result.data!!)
+                    if (firebaseUser != null) {
+
+                        // A. Create User Object explicitly for syncing
+                        val user = KuppiUser(
+                            id = firebaseUser.uid, // Essential for backend
+                            name = firebaseUser.displayName ?: "User",
+                            email = firebaseUser.email ?: "",
+                            photoUrl = firebaseUser.photoURL?.toString()
+                        )
+
+                        // B. Call the API
+                        KuppiRepository.syncUserToBackend(user)
+
+                        println("LOGIN SUCCESS & SYNCED: ${user.name}")
                     }
                 }
             }
@@ -58,9 +71,9 @@ class MainActivity : ComponentActivity() {
             val kuppiUser = remember(firebaseUser) {
                 firebaseUser?.let { user ->
                     KuppiUser(
+                        id = user.uid, // 👈 ADD THIS (Required for Dashboard API calls)
                         name = user.displayName ?: "User",
                         email = user.email ?: "",
-                        // Native Android returns a Uri, so we must convert to String
                         photoUrl = user.photoUrl?.toString()
                     )
                 }

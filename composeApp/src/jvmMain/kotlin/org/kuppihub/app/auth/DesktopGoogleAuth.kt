@@ -107,7 +107,8 @@ class DesktopGoogleAuth {
             return KuppiUser(
                 name = userInfo.name,
                 email = userInfo.email,
-                photoUrl = userInfo.picture
+                photoUrl = userInfo.picture,
+                id =userInfo.id
             )
 
         } catch (e: Exception) {

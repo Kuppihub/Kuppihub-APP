@@ -12,60 +12,53 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import org.kuppihub.app.data.KuppiRepository
-import org.kuppihub.app.data.LocalDashboardRepo
-import org.kuppihub.app.model.ModuleResponse
 import org.kuppihub.app.ui.components.KuppiLogo
-import org.kuppihub.app.ui.theme.KuppiGradients // 👈 Import your gradients
-import org.kuppihub.app.ui.theme.Blue50       // 👈 Import your solid background color
+import org.kuppihub.app.ui.theme.KuppiGradients
+import org.kuppihub.app.ui.theme.Blue50
 import org.kuppihub.app.ui.theme.White
+import org.kuppihub.app.viewmodel.DashboardViewModel
 
 @Composable
 fun DashboardScreen(
+    viewModel: DashboardViewModel,
+    userId: String?,
     onModuleClick: (Int, String) -> Unit,
     onAddModuleClick: () -> Unit
 ) {
-    var displayModules by remember { mutableStateOf<List<ModuleResponse>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var errorText by remember { mutableStateOf("") }
+    // ✅ FIX 1: Observe the ViewModel's state instead of creating local state
+    // This ensures that when ViewModel updates (e.g. after delete), the UI updates automatically.
+    val displayModules by viewModel.dashboardModules.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
+    // ✅ FIX 2: Only trigger the load function. Do NOT fetch data manually here.
+    LaunchedEffect(userId) {
+        // This handles everything: Guest mode, Sync, and Loading
+        viewModel.loadUserDashboard(userId)
+    }
     LaunchedEffect(Unit) {
-        val localList = LocalDashboardRepo.getSavedModules()
-        if (localList.isEmpty()) {
-            isLoading = false
-            return@LaunchedEffect
+        viewModel.snackbarEvent.collect { message ->
+            snackbarHostState.showSnackbar(message)
         }
-        val idsToFetch = localList.map { it.module.id }
-        try {
-            displayModules = KuppiRepository.getDashboardDetails(idsToFetch)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            displayModules = localList
-            errorText = "Offline mode: Data might be outdated."
-        }
-        isLoading = false
     }
 
     Scaffold(
-        // 1.  APPLY THEME BACKGROUND (Blue50)
         containerColor = Blue50,
-
-        // 2.  CUSTOM GRADIENT HEADER
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(KuppiGradients.MainHeader)
             ) {
-                // 2. TIGHT TOOLBAR
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(54.dp) // 👈 Fixed Compact Height (Standard is 56dp or 64dp, 48dp is very tight)
-                        .padding(horizontal = 16.dp), // Only side padding, NO vertical padding
+                        .height(54.dp)
+                        .padding(horizontal = 16.dp),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     KuppiLogo()
@@ -73,7 +66,6 @@ fun DashboardScreen(
             }
         },
         floatingActionButton = {
-            // Floating Action Button for adding modules
             FloatingActionButton(
                 onClick = onAddModuleClick,
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -84,11 +76,14 @@ fun DashboardScreen(
         }
     ) { p ->
         Box(modifier = Modifier.padding(p).fillMaxSize()) {
-            if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (displayModules.isEmpty()) {
 
-                // --- EMPTY STATE ---
+            // 1. Loading State
+            if (isLoading && displayModules.isEmpty()) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
+
+            // 2. Empty State
+            else if (displayModules.isEmpty()) {
                 Column(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -104,21 +99,19 @@ fun DashboardScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // 3. GRADIENT BUTTON
                     Button(
                         onClick = onAddModuleClick,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent // Transparent to show gradient
+                            containerColor = Color.Transparent
                         ),
-                        contentPadding = PaddingValues(), // Remove default padding
+                        contentPadding = PaddingValues(),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Box(
                             modifier = Modifier
-                                .background(KuppiGradients.PrimaryButton) // Apply Gradient
+                                .background(KuppiGradients.PrimaryButton)
                                 .padding(horizontal = 24.dp, vertical = 12.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -126,15 +119,19 @@ fun DashboardScreen(
                         }
                     }
                 }
-            } else {
+            }
+
+            // 3. List of Modules
+            else {
                 LazyColumn(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (errorText.isNotEmpty()) {
+                    // Show error banner if sync failed (but we still show cached data)
+                    if (errorMessage != null) {
                         item {
                             Text(
-                                text = errorText,
+                                text = "⚠️ Offline Mode: Showing cached data",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(bottom = 8.dp)
@@ -143,19 +140,19 @@ fun DashboardScreen(
                     }
 
                     items(displayModules) { item ->
-                        // Note: Ensure your ModuleCard itself uses the White background
-                        // and BlueBorder logic we discussed!
                         Box(
                             modifier = Modifier
                                 .clickable { onModuleClick(item.module.id, item.module.code) }
                         ) {
+                            // Make sure your ModuleCard is using the correct imports
                             ModuleCard(
                                 item = item,
                                 isAdded = true,
                                 isInDashboardScreen = true,
                                 onActionButtonClick = {
-                                    LocalDashboardRepo.removeModule(item.module.id)
-                                    displayModules = displayModules.filter { it.module.id != item.module.id }
+                                    // ✅ FIX 3: This now updates the ViewModel,
+                                    // and because of FIX 1, the UI will disappear instantly!
+                                    viewModel.removeModule(item.module.id, userId)
                                 }
                             )
                         }
