@@ -4,8 +4,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -20,6 +18,7 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.kuppihub.app.model.KuppiUser
@@ -31,7 +30,6 @@ import java.util.Properties
 
 class DesktopGoogleAuth {
 
-    // Load Secrets
     private val properties = Properties().apply {
         try {
             val stream = DesktopGoogleAuth::class.java.getResourceAsStream("/secrets.properties")
@@ -41,11 +39,15 @@ class DesktopGoogleAuth {
 
     private val CLIENT_ID = properties.getProperty("DESKTOP_GOOGLE_CLIENT_ID") ?: ""
     private val CLIENT_SECRET = properties.getProperty("DESKTOP_GOOGLE_CLIENT_SECRET") ?: ""
+
+    // 🔑 NEW: Load Firebase Web API Key
+    private val FIREBASE_API_KEY = properties.getProperty("FIREBASE_WEB_API_KEY") ?: ""
+
     private val REDIRECT_URI = "http://localhost:5000"
     private val AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
     private val SCOPE = "email profile openid"
 
-    // 1. Get the Auth Code (Opens Browser)
+    // 1. Get Code (Same as before)
     suspend fun signIn(): String? = withContext(Dispatchers.IO) {
         val result = CompletableDeferred<String?>()
         val server = embeddedServer(Netty, port = 5000) {
@@ -75,7 +77,7 @@ class DesktopGoogleAuth {
         }
     }
 
-    // 2. NEW: Exchange Code for Real User Data
+    // 2. EXCHANGE: Google Code -> Google Token -> Firebase UID
     suspend fun getRealUser(code: String): KuppiUser? {
         val client = HttpClient(CIO) {
             install(ContentNegotiation) {
@@ -84,8 +86,9 @@ class DesktopGoogleAuth {
         }
 
         try {
-            // A. Get Access Token
-            val tokenResponse: GoogleTokenResponse = client.post("https://oauth2.googleapis.com/token") {
+            println("🔄 Exchanging Code for Google Token...")
+            // A. Get Google Access Token & ID Token
+            val googleToken: GoogleTokenResponse = client.post("https://oauth2.googleapis.com/token") {
                 contentType(ContentType.Application.FormUrlEncoded)
                 setBody(
                     listOf(
@@ -98,21 +101,36 @@ class DesktopGoogleAuth {
                 )
             }.body()
 
-            // B. Get User Profile using the Token
-            val userInfo: GoogleUserInfo = client.get("https://www.googleapis.com/oauth2/v2/userinfo") {
-                header("Authorization", "Bearer ${tokenResponse.access_token}")
+            println("🔄 Exchanging Google ID Token for Firebase UID...")
+
+            // B. 🔑 CRITICAL STEP: Swap Google ID Token for Firebase UID
+            // We call the Firebase "signInWithIdp" endpoint
+            val firebaseResponse: FirebaseSignInResponse = client.post(
+                "https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=$FIREBASE_API_KEY"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    FirebaseSignInRequest(
+                        postBody = "id_token=${googleToken.id_token}&providerId=google.com",
+                        requestUri = REDIRECT_URI
+                    )
+                )
             }.body()
 
-            // C. Return Real Data
+            val firebaseUid = firebaseResponse.localId
+            println("✅ Got Firebase UID: $firebaseUid")
+
+            // C. Return User with the CORRECT Firebase UID
+            // We can use the email/name from Firebase response directly
             return KuppiUser(
-                name = userInfo.name,
-                email = userInfo.email,
-                photoUrl = userInfo.picture,
-                id =userInfo.id
+                id = firebaseUid, // 👈 This matches your Android UID now!
+                email = firebaseResponse.email,
+                name = firebaseResponse.displayName ?: "User",
+                photoUrl = firebaseResponse.photoUrl
             )
 
         } catch (e: Exception) {
-            println("❌ Failed to fetch user: ${e.message}")
+            println("❌ Auth Failed: ${e.message}")
             e.printStackTrace()
             return null
         } finally {
@@ -123,9 +141,30 @@ class DesktopGoogleAuth {
     private fun urlEncode(s: String) = URLEncoder.encode(s, StandardCharsets.UTF_8.toString())
 }
 
-// Helper Classes to parse Google JSON
-@Serializable
-data class GoogleTokenResponse(val access_token: String, val id_token: String, val expires_in: Int)
+// --- DATA CLASSES ---
 
 @Serializable
-data class GoogleUserInfo(val id: String, val email: String, val name: String, val picture: String? = null)
+data class GoogleTokenResponse(
+    val access_token: String,
+    val id_token: String, // We need this one!
+    val expires_in: Int
+)
+
+// The Request we send to Firebase
+@Serializable
+data class FirebaseSignInRequest(
+    val postBody: String,
+    val requestUri: String,
+    val returnIdpCredential: Boolean = true,
+    val returnSecureToken: Boolean = true
+)
+
+// The Response from Firebase (contains the real UID)
+@Serializable
+data class FirebaseSignInResponse(
+    val localId: String,       // 👈 This is the Firebase UID
+    val email: String,
+    val displayName: String? = null,
+    val photoUrl: String? = null,
+    val idToken: String        // The Firebase Auth Token (useful for API calls)
+)
