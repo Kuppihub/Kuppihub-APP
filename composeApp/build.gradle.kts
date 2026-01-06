@@ -137,6 +137,14 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "org.kuppihub.app.MainKt"
+        buildTypes.release.proguard {
+            obfuscate.set(false)     // Turn off obfuscation
+            optimize.set(false)      // Turn off optimization
+            isEnabled.set(false)     // Disable ProGuard entirely for testing
+        }
+        nativeDistributions {
+            modules("java.instrument", "java.sql", "jdk.crypto.ec", "java.naming")
+        }
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
