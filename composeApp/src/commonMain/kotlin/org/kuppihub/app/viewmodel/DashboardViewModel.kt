@@ -85,11 +85,11 @@ class DashboardViewModel : ViewModel() {
             val isSynced = repository.removeModule(moduleId, userId)
 
             if (isSynced) {
-                _snackbarEvent.emit("✅ Removed successfully")
+                _snackbarEvent.emit("Removed from Dashboard")
                 // ✅ FIX: If sync worked, we are online. Clear the error!
                 _errorMessage.value = null
             } else {
-                _snackbarEvent.emit("⚠️ No internet. Removed locally.")
+                _snackbarEvent.emit("Removed Locally (Synced when Online)")
                 // We don't set errorMessage here because a Snackbar is enough for this action
             }
         }

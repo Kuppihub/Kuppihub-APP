@@ -101,7 +101,18 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String,onBa
             }
         },
         // 2. Add the Snackbar Host here so the popup can appear
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                snackbar = { data ->
+                    Snackbar(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        snackbarData = data
+                    )
+                }
+            )
+        }
     ) { p ->
         Box(modifier = Modifier.padding(p).fillMaxSize()) {
             if (isLoading) {
@@ -132,7 +143,10 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String,onBa
                                     savedIds = savedIds + item.module.id
 
                                     scope.launch {
-                                        snackbarHostState.showSnackbar("Added to Dashboard")
+                                        snackbarHostState.showSnackbar(
+                                            message = "Module added successfully",
+                                            withDismissAction = true
+                                        )
                                     }
                                 }
                             }

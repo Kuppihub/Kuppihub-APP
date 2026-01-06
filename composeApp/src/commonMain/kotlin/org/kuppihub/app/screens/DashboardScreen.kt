@@ -71,7 +71,18 @@ fun DashboardScreen(
 
     Scaffold(
         containerColor = Blue50,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = {
+             SnackbarHost(
+                 hostState = snackbarHostState,
+                 snackbar = { data ->
+                     Snackbar(
+                         containerColor = MaterialTheme.colorScheme.primaryContainer,
+                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                         snackbarData = data
+                     )
+                 }
+             )
+        },
         topBar = {
             Column(
                 modifier = Modifier
