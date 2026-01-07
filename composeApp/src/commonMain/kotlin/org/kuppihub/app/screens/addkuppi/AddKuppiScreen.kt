@@ -1,5 +1,6 @@
 package org.kuppihub.app.screens.addkuppi
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,14 +14,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
 import org.kuppihub.app.viewmodel.AddKuppiViewModel
+// For opening URIs
+import androidx.compose.ui.platform.LocalUriHandler
+
 
 // KMP Firebase Imports
 import dev.gitlive.firebase.Firebase
@@ -36,6 +42,8 @@ fun AddKuppiScreen(
     val viewModel = remember { AddKuppiViewModel() }
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
+    val uriHandler = LocalUriHandler.current
+
 
     // ViewModel State
     val title by viewModel.title.collectAsState()
@@ -117,12 +125,20 @@ fun AddKuppiScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFEFF6FF), // blue-50
+                            Color(0xFFE0E7FF)  // indigo-100
+                        )
+                    )
+                )
                 .verticalScroll(scrollState)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Updated Info Card matching user's design
-            InfoCard()
+            InfoCard(onTelegramClick = { uriHandler.openUri("https://t.me/KuppihubBot") })
 
             // SEARCH MODULE FIELD (Only if ID was not passed via Nav)
             if (moduleId == -1) {
@@ -137,7 +153,11 @@ fun AddKuppiScreen(
                         } else null,
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        shape = MaterialTheme.shapes.medium
+                        shape = MaterialTheme.shapes.medium,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White
+                        )
                     )
 
                     // Results Dropdown
@@ -405,9 +425,9 @@ fun AddKuppiScreen(
 }
 
 @Composable
-fun InfoCard() {
+fun InfoCard(onTelegramClick: () -> Unit) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE5F6FD)), // Light Blue similar to Severity.Info default
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE5F6FD)), // Light Blue
         shape = MaterialTheme.shapes.medium,
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -419,7 +439,20 @@ fun InfoCard() {
                 Text("How to upload your Kuppi:", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(4.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("1. Upload your video/materials to @KuppihubBot on Telegram", style = MaterialTheme.typography.bodySmall)
+                    // Make Telegram bot clickable and styled
+                    Row {
+                         Text("1. Upload your video/materials to ", style = MaterialTheme.typography.bodySmall)
+                         Text(
+                             "@KuppihubBot", 
+                             style = MaterialTheme.typography.bodySmall.copy(
+                                 color = Color(0xFF0288D1), 
+                                 textDecoration = TextDecoration.Underline,
+                                 fontWeight = FontWeight.Bold
+                             ),
+                             modifier = Modifier.clickable { onTelegramClick() }
+                         )
+                         Text(" on Telegram", style = MaterialTheme.typography.bodySmall)
+                    }
                     Text("2. Or upload to YouTube, Google Drive, or OneDrive", style = MaterialTheme.typography.bodySmall)
                     Text("3. Copy the share links and paste them below", style = MaterialTheme.typography.bodySmall)
                 }
