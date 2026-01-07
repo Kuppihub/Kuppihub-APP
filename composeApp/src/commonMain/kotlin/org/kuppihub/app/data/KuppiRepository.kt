@@ -274,6 +274,7 @@ object KuppiRepository {
     // ---------------------------------------------------------
     suspend fun addKuppi(request: AddKuppiRequest, firebaseToken: String): Boolean {
         println("📤 SENDING JSON: $request")
+        println("🔑 TOKEN CHECK: ${firebaseToken}")
         return try {
             val response = client.post("https://kuppihub.org/api/add-kuppi") {
                 contentType(ContentType.Application.Json)

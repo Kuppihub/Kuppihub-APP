@@ -81,7 +81,8 @@ class DesktopGoogleAuth {
     suspend fun getRealUser(code: String): KuppiUser? {
         val client = HttpClient(CIO) {
             install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true })
+                json(Json { ignoreUnknownKeys = true
+                    encodeDefaults = true})
             }
         }
 
