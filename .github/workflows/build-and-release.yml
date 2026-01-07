@@ -62,15 +62,6 @@ jobs:
             composeApp/build/outputs/apk/release/*.apk
 
 
-      # Upload to Release Page
-      - uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            composeApp/build/outputs/apk/debug/*.apk
-            composeApp/build/outputs/apk/release/*.apk
-          token: ${{ secrets.GITHUB_TOKEN }}
-
   # ------------------------------------------------------------------
   # JOB 2: LINUX DESKTOP (DEB)
   # ------------------------------------------------------------------
