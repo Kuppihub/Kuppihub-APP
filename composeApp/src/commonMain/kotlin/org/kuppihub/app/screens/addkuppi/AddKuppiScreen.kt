@@ -17,17 +17,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import org.kuppihub.app.viewmodel.AddKuppiViewModel
+
+// 1️⃣ Correct Imports for KMP Firebase
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddKuppiScreen(
     moduleId: Int,
-    userId: String,
+    userId: String, // Note: This variable holds the ID TOKEN
     onBackClick: () -> Unit
 ) {
     val viewModel = remember { AddKuppiViewModel() }
     val scrollState = rememberScrollState()
+    val scope = rememberCoroutineScope() // 2️⃣ Needed to run suspend functions (token fetch)
 
     // Helper state for manual entry if ID is -1
     var inputModuleId by remember { mutableStateOf(if (moduleId != -1) moduleId.toString() else "") }
@@ -37,7 +43,7 @@ fun AddKuppiScreen(
     val description by viewModel.description.collectAsState()
     val youtubeLinks by viewModel.youtubeLinks.collectAsState()
     val telegramLinks by viewModel.telegramLinks.collectAsState()
-    val languageCode by viewModel.languageCode.collectAsState() // Make sure this exists in ViewModel
+    val languageCode by viewModel.languageCode.collectAsState()
     val isSubmitting by viewModel.isSubmitting.collectAsState()
     val success by viewModel.submissionSuccess.collectAsState()
     val errorMsg by viewModel.errorMessage.collectAsState()
@@ -66,9 +72,9 @@ fun AddKuppiScreen(
                 .fillMaxSize()
                 .verticalScroll(scrollState)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp) // Adds nice spacing between all items
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. Info Card
+            // Info Card
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
             ) {
@@ -83,7 +89,7 @@ fun AddKuppiScreen(
                 }
             }
 
-            // 2. Module ID Field
+            // Module ID Field
             if (moduleId == -1) {
                 OutlinedTextField(
                     value = inputModuleId,
@@ -95,7 +101,7 @@ fun AddKuppiScreen(
                 )
             }
 
-            // 3. Main Text Fields
+            // Main Text Fields
             OutlinedTextField(
                 value = title,
                 onValueChange = { viewModel.title.value = it },
@@ -112,7 +118,7 @@ fun AddKuppiScreen(
                 minLines = 3
             )
 
-            // 4. Language Selector (Fixes 'Invalid Code' error)
+            // Language Selector
             Column {
                 Text("Language", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
@@ -133,12 +139,12 @@ fun AddKuppiScreen(
 
             Divider()
 
-            // 5. YouTube Section (Using External LinkSection)
+            // YouTube Section
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     LinkSection(
                         title = "YouTube Links",
-                        icon = Icons.Default.SmartDisplay, // 🔴 Red Icon
+                        icon = Icons.Default.SmartDisplay,
                         color = Color(0xFFFF0000),
                         links = youtubeLinks,
                         onAdd = { viewModel.addLink(viewModel.youtubeLinks) },
@@ -148,12 +154,12 @@ fun AddKuppiScreen(
                 }
             }
 
-            // 6. Telegram Section (Using External LinkSection)
+            // Telegram Section
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     LinkSection(
                         title = "Telegram Links",
-                        icon = Icons.Default.Send, // 🔵 Blue Icon
+                        icon = Icons.Default.Send,
                         color = Color(0xFF0088CC),
                         links = telegramLinks,
                         onAdd = { viewModel.addLink(viewModel.telegramLinks) },
@@ -163,7 +169,7 @@ fun AddKuppiScreen(
                 }
             }
 
-            // 7. Error & Submit
+            // Error Message
             if (errorMsg != null) {
                 Text(
                     text = errorMsg!!,
@@ -172,11 +178,34 @@ fun AddKuppiScreen(
                 )
             }
 
+            // 3️⃣ FIXED SUBMIT BUTTON LOGIC
             Button(
                 onClick = {
                     val finalId = if (moduleId != -1) moduleId else (inputModuleId.toIntOrNull() ?: 0)
+
                     if (finalId > 0 && userId.isNotBlank()) {
-                        viewModel.submitKuppi(finalId, userId)
+                        scope.launch {
+                            // A. Default to the passed token (Works for Desktop)
+                            var tokenToUse = userId
+
+                            // B. Try to refresh if on Mobile (KMP Style)
+                            try {
+                                val currentUser = Firebase.auth.currentUser
+                                if (currentUser != null) {
+                                    // 🛠️ FIX: Handle nullable result safely
+                                    val freshToken = currentUser.getIdToken(false)
+                                    if (freshToken != null) {
+                                        tokenToUse = freshToken
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                // Ignore errors (happens on Desktop if using custom auth)
+                            }
+
+                            // C. Submit with the best token we have
+                            viewModel.submitKuppi(finalId, tokenToUse)
+                        }
+
                     }
                 },
                 enabled = !isSubmitting && (moduleId != -1 || inputModuleId.isNotBlank()),
@@ -189,7 +218,6 @@ fun AddKuppiScreen(
                 }
             }
 
-            // Extra spacing at bottom for scrolling
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
