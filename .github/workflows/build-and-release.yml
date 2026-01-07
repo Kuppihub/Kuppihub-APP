@@ -204,11 +204,12 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          # The Android-APK folder now contains BOTH debug and release APKs
-          # because we bundled them together in Step 1.
           files: |
             release-assets/Android-APK/**/*.apk
             release-assets/Linux-Deb/*.deb
             release-assets/Windows-Msi/*.msi
             release-assets/Mac-Dmg/*.dmg
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
+          token: ${{ secrets.GITHUB_TOKEN }}
