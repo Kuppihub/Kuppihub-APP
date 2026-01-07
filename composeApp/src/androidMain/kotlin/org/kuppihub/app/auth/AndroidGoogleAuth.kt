@@ -6,9 +6,14 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.GoogleAuthProvider
 import dev.gitlive.firebase.auth.auth
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.tasks.await
+import org.kuppihub.app.model.KuppiUser
 
-class AndroidGoogleAuth(private val context: Context) : GoogleAuthService {
+class AndroidGoogleAuth(
+    private val context: Context,
+    _currentUserState: MutableStateFlow<KuppiUser?>
+) : GoogleAuthService {
 
     // 🔴 REPLACE THIS WITH YOUR REAL WEB CLIENT ID FROM FIREBASE CONSOLE
     private val webClientId = "450668429167-fv1gj9gatenc1qjilqo7rpe5vodqrom7.apps.googleusercontent.com"

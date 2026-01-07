@@ -20,6 +20,7 @@ import org.kuppihub.app.navigation.*
 import org.kuppihub.app.screens.*
 import org.kuppihub.app.auth.GoogleAuthService
 import org.kuppihub.app.model.KuppiUser
+import org.kuppihub.app.screens.addkuppi.AddKuppiScreen
 import org.kuppihub.app.ui.theme.White
 import org.kuppihub.app.viewmodel.DashboardViewModel
 
@@ -147,8 +148,15 @@ fun MainScreen(
             }
 
             composable<AddKuppiRoute> {
-                AddNewKuppiScreen(onBackClick = { navController.popBackStack() })
+                val idToken = currentUser?.idToken ?: ""
+                AddKuppiScreen(
+                    onBackClick = { navController.popBackStack() },
+                    userId = idToken,
+                    moduleId = -1
+                )
             }
+
+
         }
     }
 }

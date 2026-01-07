@@ -1,5 +1,6 @@
 package org.kuppihub.app.data
 
+import io.ktor.client.request.header
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -12,6 +13,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import org.kuppihub.app.model.AddKuppiRequest
 import org.kuppihub.app.model.DashboardIdsResponse
 import org.kuppihub.app.model.Department
 import org.kuppihub.app.model.Faculty
@@ -263,6 +265,38 @@ object KuppiRepository {
             emptyList()
         }
     }
+
+    // ---------------------------------------------------------
+    // ADD KUPPI (Requires Bearer Token)
+    // ---------------------------------------------------------
+    // ---------------------------------------------------------
+    // ADD KUPPI (Requires Bearer Token)
+    // ---------------------------------------------------------
+    suspend fun addKuppi(request: AddKuppiRequest, firebaseToken: String): Boolean {
+        println("📤 SENDING JSON: $request")
+        return try {
+            val response = client.post("https://kuppihub.org/api/add-kuppi") {
+                contentType(ContentType.Application.Json)
+                header("Authorization", "Bearer $firebaseToken")
+                setBody(request)
+            }
+
+            if (response.status.value in 200..299) {
+                println("✅ SUCCESS: Kuppi added to database.")
+                true
+            } else {
+                // 👇 THIS IS THE IMPORTANT PART
+                val errorBody = response.bodyAsText()
+                println("❌ SERVER ERROR (${response.status.value}): $errorBody")
+                false
+            }
+        } catch (e: Exception) {
+            println("❌ NETWORK ERROR: ${e.message}")
+            e.printStackTrace()
+            false
+        }
+    }
+
 
 
 

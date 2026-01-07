@@ -44,6 +44,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.play.services.auth)
+            implementation(libs.kotlinx.coroutines.play.services)
+            implementation(libs.kotlinx.coroutines.play.services.v173)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -66,6 +68,7 @@ kotlin {
             implementation(libs.firebase.auth)
             implementation(libs.firebase.common)
             implementation(libs.kamel.image.default)
+
 
 
 

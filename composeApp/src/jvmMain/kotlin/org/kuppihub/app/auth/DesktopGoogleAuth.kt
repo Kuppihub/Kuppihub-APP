@@ -126,7 +126,8 @@ class DesktopGoogleAuth {
                 id = firebaseUid, // 👈 This matches your Android UID now!
                 email = firebaseResponse.email,
                 name = firebaseResponse.displayName ?: "User",
-                photoUrl = firebaseResponse.photoUrl
+                photoUrl = firebaseResponse.photoUrl,
+                idToken = firebaseResponse.idToken
             )
 
         } catch (e: Exception) {

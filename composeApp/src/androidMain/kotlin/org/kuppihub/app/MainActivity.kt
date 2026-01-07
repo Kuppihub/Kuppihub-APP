@@ -7,9 +7,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.tasks.Task // Required for the manual await
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 import org.kuppihub.app.auth.AndroidGoogleAuth
 import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.model.KuppiUser
@@ -18,63 +23,80 @@ import org.kuppihub.app.ui.MainScreen
 class MainActivity : ComponentActivity() {
 
     private lateinit var googleAuth: AndroidGoogleAuth
+    private val _currentUserState = MutableStateFlow<KuppiUser?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        googleAuth = AndroidGoogleAuth(this)
+        googleAuth = AndroidGoogleAuth(this, _currentUserState)
         enableEdgeToEdge()
-
 
         val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK && result.data != null) {
                 lifecycleScope.launch {
-                    val firebaseUser = googleAuth.handleLoginResult(result.data!!)
+                    // Explicit type declaration helps compiler resolve methods
+                    val firebaseUser: FirebaseUser? = googleAuth.handleLoginResult(result.data!!) as FirebaseUser?
+
                     if (firebaseUser != null) {
+                        try {
+                            // Uses the manual extension function defined at the bottom
+                            val tokenResult = firebaseUser.getIdToken(false).await()
+                            val token = tokenResult.token ?: ""
 
-                        // A. Create User Object explicitly for syncing
-                        val user = KuppiUser(
-                            id = firebaseUser.uid, // Essential for backend
-                            name = firebaseUser.displayName ?: "User",
-                            email = firebaseUser.email ?: "",
-                            photoUrl = firebaseUser.photoURL?.toString()
-                        )
+                            val user = KuppiUser(
+                                id = firebaseUser.uid,
+                                name = firebaseUser.displayName ?: "User",
+                                email = firebaseUser.email ?: "",
+                                photoUrl = firebaseUser.photoUrl?.toString(),
+                                idToken = token
+                            )
 
-                        // B. Call the API
-                        KuppiRepository.syncUserToBackend(user)
-
-                        println("LOGIN SUCCESS & SYNCED: ${user.name}")
+                            KuppiRepository.syncUserToBackend(user)
+                            println("LOGIN SUCCESS & SYNCED: ${user.name}")
+                        } catch (e: Exception) {
+                            println("Login sync failed: ${e.message}")
+                        }
                     }
                 }
             }
         }
 
         setContent {
-            // 1. Use Native Android Firebase Classes (Fixes Type Mismatch)
             var firebaseUser by remember { mutableStateOf<FirebaseUser?>(FirebaseAuth.getInstance().currentUser) }
+            var currentIdToken by remember { mutableStateOf("") }
 
-            // 2. Setup the Listener correctly using Native SDK
             DisposableEffect(Unit) {
                 val auth = FirebaseAuth.getInstance()
                 val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
                     firebaseUser = firebaseAuth.currentUser
                 }
-
                 auth.addAuthStateListener(listener)
+                onDispose { auth.removeAuthStateListener(listener) }
+            }
 
-                onDispose {
-                    auth.removeAuthStateListener(listener)
+            LaunchedEffect(firebaseUser) {
+                if (firebaseUser != null) {
+                    try {
+                        // Uses the manual extension function defined at the bottom
+                        val result = firebaseUser!!.getIdToken(false).await()
+                        currentIdToken = result.token ?: ""
+                    } catch (e: Exception) {
+                        println("Error fetching token: ${e.message}")
+                        currentIdToken = ""
+                    }
+                } else {
+                    currentIdToken = ""
                 }
             }
 
-            // 3. Convert Native User to Shared KuppiUser
-            val kuppiUser = remember(firebaseUser) {
+            val kuppiUser = remember(firebaseUser, currentIdToken) {
                 firebaseUser?.let { user ->
                     KuppiUser(
-                        id = user.uid, // 👈 ADD THIS (Required for Dashboard API calls)
+                        id = user.uid,
                         name = user.displayName ?: "User",
                         email = user.email ?: "",
-                        photoUrl = user.photoUrl?.toString()
+                        photoUrl = user.photoUrl?.toString(),
+                        idToken = currentIdToken
                     )
                 }
             }
@@ -88,9 +110,24 @@ class MainActivity : ComponentActivity() {
                     lifecycleScope.launch {
                         googleAuth.signOut()
                         FirebaseAuth.getInstance().signOut()
+                        currentIdToken = ""
                     }
                 }
             )
         }
+    }
+}
+
+/**
+ * 🛠️ MANUAL EXTENSION FUNCTION
+ * This replaces the need for 'kotlinx-coroutines-play-services'
+ * and fixes the "Unresolved reference: await" error.
+ */
+suspend fun <T> Task<T>.await(): T = suspendCoroutine { continuation ->
+    addOnSuccessListener { result ->
+        continuation.resume(result)
+    }
+    addOnFailureListener { exception ->
+        continuation.resumeWithException(exception)
     }
 }
