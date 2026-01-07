@@ -20,6 +20,9 @@ import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.model.KuppiUser
 import org.kuppihub.app.ui.MainScreen
 
+// Add intent imports
+import android.content.Intent
+
 class MainActivity : ComponentActivity() {
 
     private lateinit var googleAuth: AndroidGoogleAuth

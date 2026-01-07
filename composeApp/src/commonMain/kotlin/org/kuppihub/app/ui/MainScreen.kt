@@ -24,6 +24,9 @@ import org.kuppihub.app.screens.addkuppi.AddKuppiScreen
 import org.kuppihub.app.ui.theme.White
 import org.kuppihub.app.viewmodel.DashboardViewModel
 
+// IMPORTS for Share
+import org.kuppihub.app.utils.rememberShareLauncher
+
 @Composable
 fun MainScreen(
     onGoogleLoginClick: () -> Unit,
@@ -35,6 +38,8 @@ fun MainScreen(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     val dashboardViewModel = remember { DashboardViewModel() }
+    
+    val shareLauncher = rememberShareLauncher()
 
     Scaffold(
         bottomBar = {
@@ -133,6 +138,15 @@ fun MainScreen(
                     },
                     onAddKuppiClick = {
                         navController.navigate(AddKuppiRoute)
+                    },
+                    onSettingsClick = {
+                        navController.navigate(SettingsRoute)
+                    },
+                    onAboutClick = {
+                        navController.navigate(AboutRoute)
+                    },
+                    onShareClick = {
+                        shareLauncher()
                     }
                 )
             }
@@ -156,6 +170,13 @@ fun MainScreen(
                 )
             }
 
+            composable<SettingsRoute> {
+                SettingsScreen(onBackClick = { navController.popBackStack() })
+            }
+
+            composable<AboutRoute> {
+                AboutScreen(onBackClick = { navController.popBackStack() })
+            }
 
         }
     }

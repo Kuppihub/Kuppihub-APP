@@ -38,3 +38,9 @@ object TutorsRoute
 
 @Serializable
 object AddKuppiRoute
+
+@Serializable
+object SettingsRoute
+
+@Serializable
+object AboutRoute
