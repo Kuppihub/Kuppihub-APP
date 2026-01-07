@@ -58,7 +58,7 @@ fun AboutScreen(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "v1.0.2",
+                text = "v1.0.5",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.secondary
             )
