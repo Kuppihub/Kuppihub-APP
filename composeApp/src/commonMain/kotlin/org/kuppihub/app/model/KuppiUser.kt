@@ -5,5 +5,6 @@ data class KuppiUser(
     val name: String,
     val email: String,
     val photoUrl: String? = null,
-    val idToken: String
+    var idToken: String,
+    val refreshToken: String? = null
 )

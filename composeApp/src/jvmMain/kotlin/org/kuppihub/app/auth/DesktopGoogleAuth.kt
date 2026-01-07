@@ -39,15 +39,12 @@ class DesktopGoogleAuth {
 
     private val CLIENT_ID = properties.getProperty("DESKTOP_GOOGLE_CLIENT_ID") ?: ""
     private val CLIENT_SECRET = properties.getProperty("DESKTOP_GOOGLE_CLIENT_SECRET") ?: ""
-
-    // 🔑 NEW: Load Firebase Web API Key
     private val FIREBASE_API_KEY = properties.getProperty("FIREBASE_WEB_API_KEY") ?: ""
 
     private val REDIRECT_URI = "http://localhost:5000"
     private val AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
     private val SCOPE = "email profile openid"
 
-    // 1. Get Code (Same as before)
     suspend fun signIn(): String? = withContext(Dispatchers.IO) {
         val result = CompletableDeferred<String?>()
         val server = embeddedServer(Netty, port = 5000) {
@@ -77,18 +74,18 @@ class DesktopGoogleAuth {
         }
     }
 
-    // 2. EXCHANGE: Google Code -> Google Token -> Firebase UID
     suspend fun getRealUser(code: String): KuppiUser? {
         val client = HttpClient(CIO) {
             install(ContentNegotiation) {
-                json(Json { ignoreUnknownKeys = true
-                    encodeDefaults = true})
+                json(Json {
+                    ignoreUnknownKeys = true
+                    encodeDefaults = true // Important for returnSecureToken
+                })
             }
         }
 
         try {
             println("🔄 Exchanging Code for Google Token...")
-            // A. Get Google Access Token & ID Token
             val googleToken: GoogleTokenResponse = client.post("https://oauth2.googleapis.com/token") {
                 contentType(ContentType.Application.FormUrlEncoded)
                 setBody(
@@ -104,8 +101,6 @@ class DesktopGoogleAuth {
 
             println("🔄 Exchanging Google ID Token for Firebase UID...")
 
-            // B. 🔑 CRITICAL STEP: Swap Google ID Token for Firebase UID
-            // We call the Firebase "signInWithIdp" endpoint
             val firebaseResponse: FirebaseSignInResponse = client.post(
                 "https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=$FIREBASE_API_KEY"
             ) {
@@ -121,14 +116,13 @@ class DesktopGoogleAuth {
             val firebaseUid = firebaseResponse.localId
             println("✅ Got Firebase UID: $firebaseUid")
 
-            // C. Return User with the CORRECT Firebase UID
-            // We can use the email/name from Firebase response directly
             return KuppiUser(
-                id = firebaseUid, // 👈 This matches your Android UID now!
+                id = firebaseUid,
                 email = firebaseResponse.email,
                 name = firebaseResponse.displayName ?: "User",
                 photoUrl = firebaseResponse.photoUrl,
-                idToken = firebaseResponse.idToken
+                idToken = firebaseResponse.idToken,
+                refreshToken = firebaseResponse.refreshToken // ✅ Now this will work
             )
 
         } catch (e: Exception) {
@@ -140,19 +134,44 @@ class DesktopGoogleAuth {
         }
     }
 
+    suspend fun refreshToken(oldUser: KuppiUser): KuppiUser? {
+        if (oldUser.refreshToken == null) return null
+
+        val client = HttpClient(CIO) {
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true })
+            }
+        }
+
+        return try {
+            val response: RefreshTokenResponse = client.post("https://securetoken.googleapis.com/v1/token?key=$FIREBASE_API_KEY") {
+                contentType(ContentType.Application.FormUrlEncoded)
+                setBody("grant_type=refresh_token&refresh_token=${oldUser.refreshToken}")
+            }.body()
+
+            println("🔄 Token Refreshed Successfully!")
+            oldUser.copy(idToken = response.id_token, refreshToken = response.refresh_token)
+        } catch (e: Exception) {
+            println("❌ Failed to refresh token: ${e.message}")
+            null
+        } finally {
+            client.close()
+        }
+    }
+
     private fun urlEncode(s: String) = URLEncoder.encode(s, StandardCharsets.UTF_8.toString())
 }
 
-// --- DATA CLASSES ---
+// --- CORRECTED DATA CLASSES ---
 
 @Serializable
 data class GoogleTokenResponse(
     val access_token: String,
-    val id_token: String, // We need this one!
+    val id_token: String,
     val expires_in: Int
 )
 
-// The Request we send to Firebase
+// 1. Request: REMOVED 'refreshToken' (We don't send it here)
 @Serializable
 data class FirebaseSignInRequest(
     val postBody: String,
@@ -161,12 +180,20 @@ data class FirebaseSignInRequest(
     val returnSecureToken: Boolean = true
 )
 
-// The Response from Firebase (contains the real UID)
+// 2. Response: ADDED 'refreshToken' (We receive it here!)
 @Serializable
 data class FirebaseSignInResponse(
-    val localId: String,       // 👈 This is the Firebase UID
+    val localId: String,
     val email: String,
     val displayName: String? = null,
     val photoUrl: String? = null,
-    val idToken: String        // The Firebase Auth Token (useful for API calls)
+    val idToken: String,
+    val refreshToken: String // 👈 Added this so we can save it
+)
+
+@Serializable
+data class RefreshTokenResponse(
+    val id_token: String,
+    val refresh_token: String,
+    val user_id: String
 )
