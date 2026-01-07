@@ -10,27 +10,26 @@ import androidx.compose.ui.window.application
 import kotlinx.coroutines.launch
 import org.kuppihub.app.auth.DesktopGoogleAuth
 import org.kuppihub.app.ui.MainScreen
+import org.kuppihub.app.model.KuppiUser
 
 fun main() = application {
     val desktopAuth = DesktopGoogleAuth()
 
-    var desktopUser by remember { mutableStateOf<org.kuppihub.app.model.KuppiUser?>(null) }
+    var desktopUser by remember { mutableStateOf<KuppiUser?>(null) }
     val scope = rememberCoroutineScope()
 
     Window(onCloseRequest = ::exitApplication, title = "KuppiHub") {
         MainScreen(
             currentUser = desktopUser,
+
+            // 1. Google Login Handler
             onGoogleLoginClick = {
                 scope.launch {
                     println("🚀 Starting Login...")
-
-                    // 1. Open Browser & Get Code
                     val code = desktopAuth.signIn()
 
                     if (code != null) {
                         println("✅ Code received! Fetching Profile...")
-
-                        // 2. Fetch the REAL User Info (Name, Email, Photo)
                         val realUser = desktopAuth.getRealUser(code)
 
                         if (realUser != null) {
@@ -42,6 +41,14 @@ fun main() = application {
                     }
                 }
             },
+
+            // 2. 🆕 FIX: Email Login Handler
+            onLoginSuccess = { user ->
+                // When Email/Password login succeeds, update the desktop user state
+                desktopUser = user
+            },
+
+            // 3. Logout Handler
             onLogoutClick = {
                 desktopUser = null
             }

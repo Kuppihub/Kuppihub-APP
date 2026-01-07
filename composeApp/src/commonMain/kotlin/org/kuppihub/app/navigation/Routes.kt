@@ -44,3 +44,7 @@ object SettingsRoute
 
 @Serializable
 object AboutRoute
+
+@Serializable
+object LoginRoute
+

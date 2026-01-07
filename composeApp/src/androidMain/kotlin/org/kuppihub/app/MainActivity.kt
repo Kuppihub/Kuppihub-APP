@@ -106,17 +106,26 @@ class MainActivity : ComponentActivity() {
 
             MainScreen(
                 currentUser = kuppiUser,
+
+                // 1. Google Click
                 onGoogleLoginClick = {
                     launcher.launch(googleAuth.getSignInIntent())
                 },
+
+                // 2. 🆕 FIX: Added missing parameter
+                onLoginSuccess = {
+                    // On Android, the AuthStateListener above automatically handles the update.
+                    // We don't need to do anything manual here!
+                },
+
+                // 3. Logout Click
                 onLogoutClick = {
                     lifecycleScope.launch {
                         googleAuth.signOut()
                         FirebaseAuth.getInstance().signOut()
                         currentIdToken = ""
                     }
-                }
-            )
+                })
         }
     }
 }

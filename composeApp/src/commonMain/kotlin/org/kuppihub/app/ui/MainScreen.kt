@@ -32,6 +32,7 @@ fun MainScreen(
     onGoogleLoginClick: () -> Unit,
     onLogoutClick: () -> Unit,
     authService: GoogleAuthService? = null,
+    onLoginSuccess: (KuppiUser) -> Unit,
     currentUser: KuppiUser?
 ) {
     val navController = rememberNavController()
@@ -130,7 +131,10 @@ fun MainScreen(
             composable<ProfileRoutes> {
                 ProfileScreen(
                     user = currentUser,
-                    onLoginClick = onGoogleLoginClick,
+                    onLoginClick = {
+                        // Instead of triggering Google directly, go to Login Screen
+                        navController.navigate(LoginRoute)
+                    },
                     onLogoutClick = onLogoutClick,
                     authService = authService,
                     onTutorsClick = {
@@ -176,6 +180,22 @@ fun MainScreen(
 
             composable<AboutRoute> {
                 AboutScreen(onBackClick = { navController.popBackStack() })
+            }
+
+            // 6. LOGIN SCREEN
+            composable<LoginRoute> { // Make sure LoginRoute is defined in Routes.kt
+                LoginScreen(
+                    onLoginSuccess = { user ->
+                        onLoginSuccess(user) // Notify App.kt
+                        navController.popBackStack() // Go back to profile
+                    },
+                    onGoogleLoginClick = {
+                        // C. Trigger Google Login (Handled by App.kt)
+                        onGoogleLoginClick()
+                        navController.popBackStack()
+                    },
+                    onBackClick = { navController.popBackStack() }
+                )
             }
 
         }
