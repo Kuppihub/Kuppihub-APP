@@ -6,8 +6,14 @@ import org.kuppihub.app.model.KuppiUser
 class JvmAuthRepository : AuthRepository {
     private val auth = DesktopEmailAuth()
 
-    override suspend fun signIn(email: String, pass: String): KuppiUser? {
-        return auth.signIn(email, pass)
+    override suspend fun signIn(email: String, pass: String): Result<KuppiUser> {
+        val user = auth.signIn(email, pass)
+        return if (user != null) {
+            Result.success(user)
+        } else {
+            // Since DesktopEmailAuth doesn't throw exceptions yet, we return a generic failure
+            Result.failure(Exception("Login failed. Check your email or password."))
+        }
     }
 
     override suspend fun signUp(email: String, pass: String, name: String): Result<KuppiUser> {
