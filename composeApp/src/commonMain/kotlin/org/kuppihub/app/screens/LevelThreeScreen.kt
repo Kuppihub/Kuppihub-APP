@@ -7,9 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,18 +17,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch // Needed for the Snackbar popup
+import kotlinx.coroutines.launch
 import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.data.LocalDashboardRepo
 import org.kuppihub.app.model.ModuleResponse
 import org.kuppihub.app.ui.components.KuppiLogo
-import org.kuppihub.app.ui.theme.Blue50
 import org.kuppihub.app.ui.theme.KuppiGradients
 import org.kuppihub.app.ui.theme.White
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String,onBackClick: () -> Unit) {
+fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String, onBackClick: () -> Unit) {
     // 1. Setup the popup system (Snackbar) instead of Toast
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -72,7 +70,7 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String,onBa
     }
 
     Scaffold(
-        containerColor = Blue50,
+        containerColor = MaterialTheme.colorScheme.background, // Used theme color
         topBar = {
             Column(
                 modifier = Modifier
@@ -114,7 +112,13 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String,onBa
             )
         }
     ) { p ->
-        Box(modifier = Modifier.padding(p).fillMaxSize()) {
+        // Background Gradient for the content area
+        Box(
+            modifier = Modifier
+                .padding(p)
+                .fillMaxSize()
+                .background(KuppiGradients.PageBackground)
+        ) {
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (modules.isEmpty()) {
@@ -159,7 +163,6 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String,onBa
 }
 
 @Composable
-
 fun ModuleCard(
     item: ModuleResponse,
     onActionButtonClick: () -> Unit = {},
@@ -168,13 +171,14 @@ fun ModuleCard(
 ) {
     Card(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = White)
+        colors = CardDefaults.cardColors(containerColor = White),
+        shape = RoundedCornerShape(16.dp) // Softer corners
     ) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // ... (Code Bubble & Name Column remain exactly the same) ...
+            // Code Bubble
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -197,7 +201,7 @@ fun ModuleCard(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium
                 )
-                // ... Video count logic can stay here ...
+                // Video count logic
                 if (item.video_count > 0) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -215,11 +219,8 @@ fun ModuleCard(
                         )
                     }
                 }
+            }
 
-
-        }
-
-            // --- CHANGED LOGIC HERE ---
             if (isInDashboardScreen) {
                 // Case A: We are in Dashboard -> Show Delete Button
                 // REMOVED as per user request (Swipe to delete implemented in DashboardScreen)
@@ -230,17 +231,21 @@ fun ModuleCard(
                     Text(
                         text = "Added",
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary, // Green-ish usually
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(8.dp)
                     )
                 } else {
                     // It is NOT added -> Show Plus Button
-                    IconButton(onClick = onActionButtonClick) {
+                    // Using FilledIconButton for better visibility as per new UI request
+                    FilledIconButton(
+                        onClick = onActionButtonClick,
+                        colors = IconButtonDefaults.filledIconButtonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
                         Icon(
                             imageVector = Icons.Default.AddCircle,
                             contentDescription = "Add",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = Color.White
                         )
                     }
                 }

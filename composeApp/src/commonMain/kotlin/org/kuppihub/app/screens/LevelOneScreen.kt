@@ -4,18 +4,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.model.Department
 import org.kuppihub.app.ui.components.KuppiLogo
-import org.kuppihub.app.ui.theme.Blue50
 import org.kuppihub.app.ui.theme.KuppiGradients
 import org.kuppihub.app.ui.theme.White
 
@@ -35,7 +37,7 @@ fun LevelOneScreen(facultyId: String, onItemClick: (String) -> Unit, onBackClick
     }
 
     Scaffold(
-        containerColor = Blue50,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             Column(
                 modifier = Modifier
@@ -64,19 +66,43 @@ fun LevelOneScreen(facultyId: String, onItemClick: (String) -> Unit, onBackClick
             }
         }
     ) { p ->
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
-            modifier = Modifier.padding(p),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+        // Use background gradient
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(KuppiGradients.PageBackground)
+                .padding(p)
         ) {
-            items(items) { item ->
-                Card(
-                    onClick = { onItemClick(item.id) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = White)
-                ) {
-                    Column(Modifier.padding(16.dp)) {
-                        Text(item.name, style = MaterialTheme.typography.titleMedium)
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(items) { item ->
+                    Card(
+                        onClick = { onItemClick(item.id) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = White),
+                        shape = RoundedCornerShape(12.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Row(
+                            Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                item.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Icon(
+                                imageVector = Icons.Default.ArrowForward,
+                                contentDescription = "Go",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }

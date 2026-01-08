@@ -1,19 +1,33 @@
 package org.kuppihub.app.screens
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons // 👈 Added Import
-import androidx.compose.material.icons.filled.MarkEmailRead // 👈 Added Import
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.MarkEmailRead
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.kuppihub.app.model.KuppiUser
+import org.kuppihub.app.ui.components.GoogleLogoIcon
+import org.kuppihub.app.ui.components.KuppiLogo
+import org.kuppihub.app.ui.theme.KuppiGradients
 import org.kuppihub.app.viewmodel.LoginViewModel
-
-// ... imports ...
 
 @Composable
 fun LoginScreen(
@@ -24,10 +38,11 @@ fun LoginScreen(
     val viewModel = remember { LoginViewModel() }
 
     // State
-    var isSignUpMode by remember { mutableStateOf(false) } // 🆕 Toggle Mode
-    var name by remember { mutableStateOf("") } // 🆕 Name Field
+    var isSignUpMode by remember { mutableStateOf(false) }
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMsg by viewModel.errorMessage.collectAsState()
@@ -38,114 +53,244 @@ fun LoginScreen(
         successUser?.let { onLoginSuccess(it) }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+    // Full screen background with Gradient
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(KuppiGradients.PageBackground),
+        contentAlignment = Alignment.Center
     ) {
-        if (!isVerificationMode) {
-            Text(
-                if (isSignUpMode) "Create Account" else "Welcome Back",
-                style = MaterialTheme.typography.headlineMedium
-            )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Logo Section
+            // We scale it up a bit for emphasis
+            Box(modifier = Modifier.scale(1.2f)) {
+                KuppiLogo()
+            }
             Spacer(modifier = Modifier.height(32.dp))
-        }
 
-        if (isVerificationMode) {
-            // ... (Your Verification UI Code from before) ...
-            Icon(
-                imageVector = Icons.Default.MarkEmailRead,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("Verify your Email", style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("We sent a link to your email. Click it and then press 'Done' below.")
-            Spacer(modifier = Modifier.height(24.dp))
-            Button(onClick = { viewModel.checkVerificationStatus() }, modifier = Modifier.fillMaxWidth()) {
-                Text("I have verified (Done)")
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            TextButton(onClick = { viewModel.resendVerification() }) { Text("Resend Email") }
-            Spacer(modifier = Modifier.height(8.dp))
-            TextButton(onClick = { viewModel.resetToLogin() }) { Text("Back to Login") }
-            if (errorMsg != null) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(errorMsg!!, color = MaterialTheme.colorScheme.error)
-            }
-        } else {
-            // 🆕 NAME FIELD (Only visible in Sign Up mode)
-            if (isSignUpMode) {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Full Name") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (errorMsg != null) {
-                Text(errorMsg!!, color = MaterialTheme.colorScheme.error)
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-
-            if (isLoading) {
-                CircularProgressIndicator()
-            } else {
-                // 🆕 DYNAMIC BUTTON
-                Button(
-                    onClick = {
-                        if (isSignUpMode) {
-                            viewModel.signUpWithEmail(email, password, name)
-                        } else {
-                            viewModel.loginWithEmail(email, password)
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
+            // Main Card
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 480.dp), // Max width for tablet/desktop
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                shape = RoundedCornerShape(24.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(if (isSignUpMode) "Sign Up" else "Login")
+                    if (isVerificationMode) {
+                        VerificationContent(
+                            viewModel = viewModel,
+                            errorMsg = errorMsg
+                        )
+                    } else {
+                        // Title
+                        Text(
+                            text = if (isSignUpMode) "Create Account" else "Welcome Back",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = if (isSignUpMode) "Sign up to get started" else "Login to continue",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Fields
+                        if (isSignUpMode) {
+                            OutlinedTextField(
+                                value = name,
+                                onValueChange = { name = it },
+                                label = { Text("Full Name") },
+                                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                singleLine = true
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = { Text("Email Address") },
+                            leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text("Password") },
+                            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                            trailingIcon = {
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    Icon(
+                                        imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                        contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                                    )
+                                }
+                            },
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Error Message
+                        if (errorMsg != null) {
+                            Text(
+                                text = errorMsg!!,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+                        }
+
+                        // Action Button
+                        if (isLoading) {
+                            CircularProgressIndicator()
+                        } else {
+                            Button(
+                                onClick = {
+                                    if (isSignUpMode) {
+                                        viewModel.signUpWithEmail(email, password, name)
+                                    } else {
+                                        viewModel.loginWithEmail(email, password)
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth().height(50.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Text(
+                                    text = if (isSignUpMode) "Sign Up" else "Log In",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Divider with "Or"
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Divider(modifier = Modifier.weight(1f))
+                            Text(
+                                " or ",
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Divider(modifier = Modifier.weight(1f))
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Google Button
+                        OutlinedButton(
+                            onClick = onGoogleLoginClick,
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Color.LightGray),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = Color.White
+                            )
+                        ) {
+                            GoogleLogoIcon()
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                "Continue with Google",
+                                color = Color.Black.copy(alpha = 0.87f),
+                                fontSize = 16.sp
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Toggle Mode
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                if (isSignUpMode) "Already have an account?" else "Don't have an account?",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            TextButton(onClick = { isSignUpMode = !isSignUpMode }) {
+                                Text(
+                                    if (isSignUpMode) "Log In" else "Sign Up",
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
-            // 🆕 TOGGLE BUTTON
-            TextButton(onClick = { isSignUpMode = !isSignUpMode }) {
-                Text(if (isSignUpMode) "Already have an account? Login" else "Don't have an account? Sign Up")
+            // Guest option (outside card)
+            Spacer(modifier = Modifier.height(24.dp))
+            if (!isVerificationMode) {
+                TextButton(onClick = onBackClick) {
+                    Text(
+                        "Continue as Guest",
+                        color = MaterialTheme.colorScheme.onBackground // Use onBackground for contrast on gradient
+                    )
+                }
             }
+        }
+    }
+}
 
+@Composable
+fun VerificationContent(viewModel: LoginViewModel, errorMsg: String?) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(
+            imageVector = Icons.Default.MarkEmailRead,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Verify your Email", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            "We sent a link to your email. Click it and then press 'Done' below.",
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = { viewModel.checkVerificationStatus() },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text("I have verified (Done)")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        TextButton(onClick = { viewModel.resendVerification() }) { Text("Resend Email") }
+        Spacer(modifier = Modifier.height(8.dp))
+        TextButton(onClick = { viewModel.resetToLogin() }) { Text("Back to Login") }
+        if (errorMsg != null) {
             Spacer(modifier = Modifier.height(16.dp))
-            Divider()
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = onGoogleLoginClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Continue with Google")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            TextButton(onClick = onBackClick) { Text("Not now, continue as Guest") }
+            Text(errorMsg, color = MaterialTheme.colorScheme.error)
         }
     }
 }

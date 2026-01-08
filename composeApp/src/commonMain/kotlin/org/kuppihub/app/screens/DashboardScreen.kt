@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.kuppihub.app.ui.components.KuppiLogo
 import org.kuppihub.app.ui.theme.KuppiGradients
-import org.kuppihub.app.ui.theme.Blue50
 import org.kuppihub.app.ui.theme.White
 import org.kuppihub.app.viewmodel.DashboardViewModel
 
@@ -70,7 +69,7 @@ fun DashboardScreen(
     }
 
     Scaffold(
-        containerColor = Blue50,
+        containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = {
              SnackbarHost(
                  hostState = snackbarHostState,
@@ -110,7 +109,12 @@ fun DashboardScreen(
             }
         }
     ) { p ->
-        Box(modifier = Modifier.padding(p).fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .padding(p)
+                .fillMaxSize()
+                .background(KuppiGradients.PageBackground) // Background Gradient
+        ) {
 
             if (isLoading && displayModules.isEmpty()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -186,8 +190,6 @@ fun DashboardScreen(
                                     SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
                                     else -> Alignment.CenterEnd
                                 }
-                                // Changed background color to Transparent (or match theme container)
-                                // Only icon is Red
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
@@ -198,7 +200,7 @@ fun DashboardScreen(
                                     Icon(
                                         imageVector = Icons.Default.Delete,
                                         contentDescription = "Delete",
-                                        tint = MaterialTheme.colorScheme.error // Use error color (usually Red)
+                                        tint = MaterialTheme.colorScheme.error
                                     )
                                 }
                             },

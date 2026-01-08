@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -14,7 +15,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.launch
+import org.kuppihub.app.ui.theme.KuppiGradients
 import org.kuppihub.app.viewmodel.AddKuppiViewModel
 // For opening URIs
 import androidx.compose.ui.platform.LocalUriHandler
@@ -111,28 +112,31 @@ fun AddKuppiScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Add New Kuppi") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+            Column(modifier = Modifier.background(KuppiGradients.MainHeader)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .padding(horizontal = 4.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onBackClick) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Text("Add New Kuppi", style = MaterialTheme.typography.titleMedium, color = Color.Black)
                     }
                 }
-            )
-        }
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background // Theme color
     ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            Color(0xFFEFF6FF), // blue-50
-                            Color(0xFFE0E7FF)  // indigo-100
-                        )
-                    )
-                )
+                .background(KuppiGradients.PageBackground) // Background Gradient
                 .verticalScroll(scrollState)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -153,7 +157,7 @@ fun AddKuppiScreen(
                         } else null,
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        shape = MaterialTheme.shapes.medium,
+                        shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = Color.White,
                             unfocusedContainerColor = Color.White
@@ -189,7 +193,7 @@ fun AddKuppiScreen(
             Card(
                 elevation = CardDefaults.cardElevation(2.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = MaterialTheme.shapes.medium
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text("Basic Details", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
@@ -199,7 +203,7 @@ fun AddKuppiScreen(
                         onValueChange = { viewModel.title.value = it },
                         label = { Text("Title") },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium
+                        shape = RoundedCornerShape(12.dp)
                     )
 
                     OutlinedTextField(
@@ -208,7 +212,7 @@ fun AddKuppiScreen(
                         label = { Text("Description") },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 3,
-                        shape = MaterialTheme.shapes.medium
+                        shape = RoundedCornerShape(12.dp)
                     )
                     
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -218,7 +222,7 @@ fun AddKuppiScreen(
                             label = { Text("Index No (Optional)") },
                             modifier = Modifier.weight(1f),
                             singleLine = true,
-                            shape = MaterialTheme.shapes.medium
+                            shape = RoundedCornerShape(12.dp)
                         )
                     }
 
@@ -266,7 +270,7 @@ fun AddKuppiScreen(
              Card(
                 elevation = CardDefaults.cardElevation(2.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                 shape = MaterialTheme.shapes.medium
+                 shape = RoundedCornerShape(16.dp)
             ) {
                  Column(modifier = Modifier.padding(16.dp)) {
                      Row(verticalAlignment = Alignment.CenterVertically) {
@@ -409,7 +413,8 @@ fun AddKuppiScreen(
                 },
                 enabled = !isSubmitting && (moduleId != -1 || selectedModule != null),
                 modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape = MaterialTheme.shapes.large
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 if (isSubmitting) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp)) 
                 else {
@@ -428,7 +433,7 @@ fun AddKuppiScreen(
 fun InfoCard(onTelegramClick: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color(0xFFE5F6FD)), // Light Blue
-        shape = MaterialTheme.shapes.medium,
+        shape = RoundedCornerShape(12.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         // FIXED: Removed crossAxisAlignment which does not exist. Changed to verticalAlignment.
@@ -477,7 +482,7 @@ fun LinkSectionCard(
     // We construct a custom container to match the design from user
     Surface(
         color = bgColor,
-        shape = MaterialTheme.shapes.medium,
+        shape = RoundedCornerShape(12.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, borderColor),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -540,7 +545,7 @@ fun LinkSectionCard(
                                 focusedBorderColor = borderColor,
                                 unfocusedBorderColor = borderColor
                             ),
-                            shape = MaterialTheme.shapes.small
+                            shape = RoundedCornerShape(8.dp)
                         )
                         
                         IconButton(

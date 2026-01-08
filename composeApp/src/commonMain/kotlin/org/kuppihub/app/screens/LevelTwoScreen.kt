@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.model.Semester
 import org.kuppihub.app.ui.components.KuppiLogo
-import org.kuppihub.app.ui.theme.Blue50
 import org.kuppihub.app.ui.theme.KuppiGradients
 import org.kuppihub.app.ui.theme.White
 
@@ -55,7 +54,7 @@ fun LevelTwoScreen(
     }
 
     Scaffold(
-        containerColor = Blue50,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             Column(
                 modifier = Modifier
@@ -84,58 +83,64 @@ fun LevelTwoScreen(
             }
         },
     ) { p ->
-        LazyColumn(
-            contentPadding = PaddingValues(16.dp),
-            modifier = Modifier.padding(p),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(KuppiGradients.PageBackground)
+                .padding(p)
         ) {
-            items(items) { item ->
-                Card(
-                    onClick = {
-                        println("DEBUG: Clicking Semester: ${item.name} with ID: '${item.id}'")
-                        onItemClick(item.id)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(items) { item ->
+                    Card(
+                        onClick = {
+                            println("DEBUG: Clicking Semester: ${item.name} with ID: '${item.id}'")
+                            onItemClick(item.id)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        // 1. Semester Name (Takes up available space)
-                        Text(
-                            text = item.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        // 2. Module Count Badge
-                        Surface(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            shape = RoundedCornerShape(50), // Pill shape
-                            modifier = Modifier.padding(horizontal = 8.dp)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // 1. Semester Name (Takes up available space)
                             Text(
-                                text = "${item.modules.size} Modules",
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold
+                                text = item.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            // 2. Module Count Badge
+                            Surface(
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(50), // Pill shape
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            ) {
+                                Text(
+                                    text = "${item.modules.size} Modules",
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+
+                            // 3. Arrow Icon
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                             )
                         }
-
-                        // 3. Arrow Icon
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                        )
                     }
                 }
             }

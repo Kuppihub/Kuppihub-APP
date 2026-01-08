@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.kuppihub.app.ui.components.KuppiLogo
-import org.kuppihub.app.ui.theme.Blue50
+import org.kuppihub.app.ui.theme.KuppiGradients
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,62 +23,82 @@ fun AboutScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("About KuppiHub") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+             Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(KuppiGradients.MainHeader)
+            ) {
+                // TIGHT TOOLBAR
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .padding(horizontal = 4.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = onBackClick) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                        }
+                        KuppiLogo(showText = false)
+                        Spacer(Modifier.width(12.dp))
+                        Text("About KuppiHub", style = MaterialTheme.typography.titleMedium)
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Blue50
-                )
-            )
+                }
+            }
         },
-        containerColor = Blue50
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .background(KuppiGradients.PageBackground)
         ) {
-            KuppiLogo(modifier = Modifier.scale(1.5f))
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            Text(
-                text = "KuppiHub",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = "v1.0.5",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.secondary
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            Text(
-                text = "KuppiHub is a platform built by students for students. Our goal is to make sharing and finding academic resources easier and more accessible for everyone at UOM.",
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            
-            Spacer(modifier = Modifier.height(48.dp))
-            
-            Text(
-                text = "Made with ❤️ by UOM Engineering",
-                style = MaterialTheme.typography.labelMedium,
-                color = Color.Gray
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                KuppiLogo(modifier = Modifier.scale(1.5f))
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                Text(
+                    text = "KuppiHub",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Text(
+                    text = "v1.0.5",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                Text(
+                    text = "KuppiHub is a platform built by students for students. Our goal is to make sharing and finding academic resources easier and more accessible for everyone at UOM.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Spacer(modifier = Modifier.height(48.dp))
+                
+                Text(
+                    text = "Made with ❤️ by UOM Engineering",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.Gray
+                )
+            }
         }
     }
 }

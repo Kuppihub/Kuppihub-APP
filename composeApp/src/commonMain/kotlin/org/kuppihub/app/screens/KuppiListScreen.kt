@@ -27,7 +27,6 @@ import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.data.LocalDashboardRepo
 import org.kuppihub.app.model.KuppiResponse
 import org.kuppihub.app.ui.components.KuppiLogo
-import org.kuppihub.app.ui.theme.Blue50
 import org.kuppihub.app.ui.theme.KuppiGradients
 import org.kuppihub.app.ui.theme.White
 
@@ -75,7 +74,7 @@ fun KuppiListScreen(moduleId: Int, moduleCode: String, onBackClick: () -> Unit) 
     }
 
     Scaffold(
-        containerColor = Blue50,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             Column(
                 modifier = Modifier
@@ -116,7 +115,13 @@ fun KuppiListScreen(moduleId: Int, moduleCode: String, onBackClick: () -> Unit) 
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { p ->
-        Box(modifier = Modifier.padding(p).fillMaxSize()) {
+        // Background Gradient
+        Box(
+            modifier = Modifier
+                .padding(p)
+                .fillMaxSize()
+                .background(KuppiGradients.PageBackground)
+        ) {
 
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))

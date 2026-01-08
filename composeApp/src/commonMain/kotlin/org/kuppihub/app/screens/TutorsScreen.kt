@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -31,7 +30,7 @@ import androidx.compose.ui.unit.sp
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.kuppihub.app.model.Tutor
-import org.kuppihub.app.ui.theme.Blue50
+import org.kuppihub.app.ui.components.KuppiLogo
 import org.kuppihub.app.ui.theme.KuppiGradients
 import org.kuppihub.app.ui.theme.White
 import org.kuppihub.app.viewmodel.TutorsViewModel
@@ -44,23 +43,40 @@ fun TutorsScreen(onBackClick: () -> Unit) {
     val isLoading by viewModel.isLoading.collectAsState()
 
     Scaffold(
-        containerColor = Blue50,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(
-                title = { Text("Hall of Fame") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(KuppiGradients.MainHeader)
+            ) {
+                 // TIGHT TOOLBAR
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .padding(horizontal = 4.dp), // Less padding for navigation icon
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = onBackClick) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                        }
+                        KuppiLogo(showText = false)
+                        Spacer(Modifier.width(12.dp))
+                        Text("Hall of Fame", style = MaterialTheme.typography.titleMedium)
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Blue50)
-            )
+                }
+            }
         }
     ) { padding ->
         Box(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
+                .background(KuppiGradients.PageBackground)
         ) {
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))

@@ -6,15 +6,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.WifiOff // Added icon for offline state
+import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.kuppihub.app.data.KuppiRepository
@@ -22,7 +24,6 @@ import org.kuppihub.app.data.LocalDashboardRepo
 import org.kuppihub.app.model.Faculty
 import org.kuppihub.app.model.SearchModuleItem
 import org.kuppihub.app.ui.components.KuppiLogo
-import org.kuppihub.app.ui.theme.Blue50
 import org.kuppihub.app.ui.theme.KuppiGradients
 import org.kuppihub.app.ui.theme.White
 
@@ -38,7 +39,7 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
     var isSearching by remember { mutableStateOf(false) }
-    var isOffline by remember { mutableStateOf(false) } // 👈 New state to track connection errors
+    var isOffline by remember { mutableStateOf(false) }
 
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
@@ -82,16 +83,14 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
     }
 
     Scaffold(
-        containerColor = Blue50,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(KuppiGradients.MainHeader)
             ) {
-                // TIGHT TOOLBAR with Logo
-
-
+                // Header Content
                 // Search Bar in the Header
                 Box(
                     modifier = Modifier
@@ -132,7 +131,12 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { p ->
-        Box(modifier = Modifier.padding(p).fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .padding(p)
+                .fillMaxSize()
+                .background(KuppiGradients.PageBackground) // Background Gradient
+        ) {
 
             // VIEW A: SEARCH RESULTS
             if (searchQuery.length >= 2) {
@@ -203,20 +207,44 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                         item {
                             Text(
                                 "Browse by Faculty",
-                                style = MaterialTheme.typography.titleSmall,
-                                modifier = Modifier.padding(bottom = 8.dp, start = 4.dp),
-                                color = MaterialTheme.colorScheme.secondary
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(bottom = 12.dp, start = 4.dp),
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                         items(faculties) { faculty ->
                             Card(
                                 onClick = { onFacultyClick(faculty.id) },
                                 modifier = Modifier.padding(bottom = 8.dp).fillMaxWidth(),
-                                colors = CardDefaults.cardColors(containerColor = White) // Use White card bg
+                                colors = CardDefaults.cardColors(containerColor = White),
+                                shape = RoundedCornerShape(12.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                             ) {
-                                Column(Modifier.padding(16.dp)) {
-                                    Text(faculty.name, style = MaterialTheme.typography.titleMedium)
-                                    Text("${faculty.children.size} Departments", style = MaterialTheme.typography.bodySmall)
+                                Row(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            faculty.name,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            "${faculty.children.size} Departments",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowForward,
+                                        contentDescription = "Go",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
                             }
                         }
