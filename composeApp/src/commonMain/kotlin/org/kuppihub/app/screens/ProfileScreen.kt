@@ -12,6 +12,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kuppihubappnew.composeapp.generated.resources.Res
+import kuppihubappnew.composeapp.generated.resources.footer_text
 import kuppihubappnew.composeapp.generated.resources.version
 import org.jetbrains.compose.resources.stringResource
 import org.kuppihub.app.auth.GoogleAuthService
@@ -98,7 +99,7 @@ fun ProfileScreen(
                 KuppiLogo(modifier = Modifier.scale(1.2f))
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = stringResource(Res.string.version, "1.1.2"),
+                    text = stringResource(Res.string.version),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -106,7 +107,11 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // 4. FOOTER
-                Text("Made with ❤️ by UOM Engineering", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+                Text(
+                    text = stringResource(Res.string.footer_text),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.Gray
+                )
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }

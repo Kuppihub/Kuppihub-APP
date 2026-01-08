@@ -9,9 +9,6 @@ import kotlinx.serialization.Serializable
 
 class NotificationRepository(private val client: HttpClient) {
 
-    // Use localhost for Desktop if running locally, or your https URL
-    private val BASE_URL = "https://kuppihub.org/api/notifications"
-
     suspend fun registerDevice(token: String, firebaseUid: String?, idToken: String?) {
         try {
             val payload = RegisterDeviceRequest(
@@ -20,7 +17,7 @@ class NotificationRepository(private val client: HttpClient) {
                 device_type = getDeviceType()
             )
 
-            client.post("$BASE_URL/devices") {
+            client.post(ApiConstants.NOTIFICATION_DEVICES) {
                 contentType(ContentType.Application.Json)
                 if (idToken != null && idToken.isNotEmpty()) {
                     header("Authorization", "Bearer $idToken")
@@ -33,17 +30,16 @@ class NotificationRepository(private val client: HttpClient) {
         }
     }
 
-    // 🔴 FIXED: Now parses the JSON Object instead of a List
     suspend fun getNotifications(page: Int = 1, idToken: String): List<NotificationItem> {
         return try {
-            val response = client.get(BASE_URL) {
+            val response = client.get(ApiConstants.NOTIFICATIONS_BASE) {
                 parameter("page", page)
                 if (idToken.isNotEmpty()) {
                     header("Authorization", "Bearer $idToken")
                 }
-            }.body<NotificationResponse>() // 👈 Map to the Wrapper Class
+            }.body<NotificationResponse>()
 
-            response.data // Return just the list inside 'data'
+            response.data
         } catch (e: Exception) {
             println("❌ Failed to fetch notifications: ${e.message}")
             emptyList()
@@ -53,7 +49,7 @@ class NotificationRepository(private val client: HttpClient) {
     // Mark as Read
     suspend fun markAsRead(notificationId: Int, idToken: String): Boolean {
         return try {
-            val response = client.put("$BASE_URL/$notificationId/read") {
+            val response = client.put(ApiConstants.getMarkAsReadUrl(notificationId)) {
                 header("Authorization", "Bearer $idToken")
             }
             response.status.value in 200..299
@@ -73,7 +69,6 @@ data class RegisterDeviceRequest(
     val device_type: String
 )
 
-// 🔴 NEW WRAPPER CLASS (Matches your backend response)
 @Serializable
 data class NotificationResponse(
     val success: Boolean,

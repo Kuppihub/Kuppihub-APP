@@ -11,6 +11,7 @@
     <string name="clear_search">Clear</string>
     <string name="go">Go</string>
     <string name="delete">Delete</string>
+    <string name="footer_text">Made with ❤️ by UOM Engineering</string>
 
     <!-- Dashboard Screen -->
     <string name="dashboard_title">Dashboard</string>
@@ -81,6 +82,6 @@
     <!-- About Screen -->
     <string name="about_kuppihub_title">About Kuppihub</string>
     <string name="kuppihub_description">Kuppihub is a platform for students to share and discover educational resources.</string>
-    <string name="version">Version %1$s</string>
+    <string name="version">1.0.3</string>
 
 </resources>

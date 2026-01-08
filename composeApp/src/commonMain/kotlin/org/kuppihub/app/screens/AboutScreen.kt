@@ -79,7 +79,7 @@ fun AboutScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 Text(
-                    text = stringResource(Res.string.version, "1.1.2"),
+                    text = stringResource(Res.string.version),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -96,7 +96,7 @@ fun AboutScreen(
                 Spacer(modifier = Modifier.height(48.dp))
                 
                 Text(
-                    text = "Made with ❤️ by UOM Engineering",
+                    text = stringResource(Res.string.footer_text),
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.Gray
                 )

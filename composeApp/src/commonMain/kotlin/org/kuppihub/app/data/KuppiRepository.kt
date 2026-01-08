@@ -38,15 +38,12 @@ object KuppiRepository {
         }
     }
 
-    private const val BASE_URL = "https://kuppihub.org/api"
-
     private var cachedHierarchy: Map<String, Faculty>? = null
 
     suspend fun getFaculties(): List<Faculty> {
         if (cachedHierarchy == null) {
-            // FIX IS HERE: Added <Map<String, Faculty>>
             val response = client
-                .get("https://kuppihub.org/api/hierarchy")
+                .get(ApiConstants.HIERARCHY)
                 .body<Map<String, Faculty>>()
 
             // Inject IDs
@@ -83,13 +80,13 @@ object KuppiRepository {
         // Join the numbers into a string: "28,29,30"
         val idsString = ids.joinToString(",")
 
-        // API Call: https://kuppihub.org/api/modules-by-ids?ids=28,29...
+        // API Call
         return client
-            .get("https://kuppihub.org/api/modules-by-ids?ids=$idsString")
+            .get(ApiConstants.MODULES_BY_IDS) {
+                parameter("ids", idsString)
+            }
             .body<List<ModuleResponse>>()
     }
-
-    // Inside KuppiRepository object
 
     suspend fun getDashboardDetails(ids: List<Int>): List<ModuleResponse> {
         if (ids.isEmpty()) return emptyList()
@@ -97,20 +94,14 @@ object KuppiRepository {
         // Convert list [33, 34] to string "33,34"
         val idString = ids.joinToString(",")
 
-        // Call the endpoint
-        // Assuming 'client' is your Ktor HttpClient defined in the Repo
-        val response: List<ModuleResponse> = client.get("https://kuppihub.org/api/dashboard-modules") {
+        return client.get(ApiConstants.DASHBOARD_MODULES) {
             parameter("ids", idString)
         }.body()
-
-        return response
     }
-
-    // Inside KuppiRepository object
 
     suspend fun getKuppis(moduleId: Int): List<KuppiResponse> {
         return try {
-            client.get("https://kuppihub.org/api/kuppis") {
+            client.get(ApiConstants.KUPPIS) {
                 parameter("moduleId", moduleId)
             }.body()
         } catch (e: Exception) {
@@ -119,15 +110,11 @@ object KuppiRepository {
         }
     }
 
-
-    // Inside KuppiRepository object
-
     suspend fun searchModules(query: String): List<SearchModuleItem> {
         if (query.length < 2) return emptyList() // Don't search for 1 letter
 
         return try {
-            // Calls: https://kuppihub.org/api/search-modules?q=cs
-            val response = client.get("https://kuppihub.org/api/search-modules") {
+            val response = client.get(ApiConstants.SEARCH_MODULES) {
                 parameter("q", query)
             }.body<SearchApiResponse>()
 
@@ -141,7 +128,7 @@ object KuppiRepository {
     // 1. Sync User after Login
     suspend fun syncUserToBackend(user: KuppiUser) {
         try {
-            client.post("$BASE_URL/users") {
+            client.post(ApiConstants.USERS) {
                 contentType(ContentType.Application.Json)
                 setBody(
                     SyncUserRequest(
@@ -161,20 +148,20 @@ object KuppiRepository {
     // 2. Get Saved Module IDs from Cloud
     suspend fun fetchCloudDashboardIds(uid: String): List<Int>? {
         return try {
-            val response: DashboardIdsResponse = client.get("$BASE_URL/user-dashboard?firebase_uid=$uid").body()
+            val response: DashboardIdsResponse = client.get(ApiConstants.USER_DASHBOARD) {
+                parameter("firebase_uid", uid)
+            }.body()
             response.moduleIds
         } catch (e: Exception) {
             println("⚠️ Offline: Could not fetch cloud dashboard.")
-            null // 👈 Return NULL instead of emptyList()
+            null
         }
     }
-
-
 
     // 3. Save Module IDs to Cloud
     suspend fun updateCloudDashboard(uid: String, moduleIds: List<Int>) {
         try {
-            client.post("$BASE_URL/user-dashboard") {
+            client.post(ApiConstants.USER_DASHBOARD) {
                 contentType(ContentType.Application.Json)
                 setBody(UpdateDashboardRequest(uid, moduleIds))
             }
@@ -194,7 +181,6 @@ object KuppiRepository {
         val serverIdsList = fetchCloudDashboardIds(firebaseUid)
 
         // 🛑 STOP: If serverIdsList is null, we are OFFLINE.
-        // Just return local data and DO NOT try to push/merge.
         if (serverIdsList == null) {
             println("⚠️ Offline Mode: Skipping sync. Using local data.")
             return localModules
@@ -226,6 +212,7 @@ object KuppiRepository {
             return localModules
         }
     }
+
     // 🗑️ DELETE LOGIC
     // Returns TRUE if synced, FALSE if offline
     suspend fun removeModule(moduleId: Int, firebaseUid: String?): Boolean {
@@ -251,7 +238,7 @@ object KuppiRepository {
     suspend fun getTutors(): List<Tutor> {
         return try {
             // 1. Get the raw string first (ignores the wrong Content-Type header)
-            val responseString = client.get("https://kuppihub.org/api/tutors").bodyAsText()
+            val responseString = client.get(ApiConstants.TUTORS).bodyAsText()
 
             // 2. Manually parse it into your object
             val jsonParser = Json { ignoreUnknownKeys = true }
@@ -266,17 +253,10 @@ object KuppiRepository {
         }
     }
 
-    // ---------------------------------------------------------
-    // ADD KUPPI (Requires Bearer Token)
-    // ---------------------------------------------------------
-    // ---------------------------------------------------------
-    // ADD KUPPI (Requires Bearer Token)
-    // ---------------------------------------------------------
     suspend fun addKuppi(request: AddKuppiRequest, firebaseToken: String): Boolean {
         println("📤 SENDING JSON: $request")
-        println("🔑 TOKEN CHECK: ${firebaseToken}")
         return try {
-            val response = client.post("https://kuppihub.org/api/add-kuppi") {
+            val response = client.post(ApiConstants.ADD_KUPPI) {
                 contentType(ContentType.Application.Json)
                 header("Authorization", "Bearer $firebaseToken")
                 setBody(request)
@@ -286,7 +266,6 @@ object KuppiRepository {
                 println("✅ SUCCESS: Kuppi added to database.")
                 true
             } else {
-                // 👇 THIS IS THE IMPORTANT PART
                 val errorBody = response.bodyAsText()
                 println("❌ SERVER ERROR (${response.status.value}): $errorBody")
                 false
@@ -297,8 +276,4 @@ object KuppiRepository {
             false
         }
     }
-
-
-
-
 }
