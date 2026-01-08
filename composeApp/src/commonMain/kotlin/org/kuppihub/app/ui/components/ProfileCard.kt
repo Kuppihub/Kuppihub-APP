@@ -1,15 +1,24 @@
 package org.kuppihub.app.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import org.kuppihub.app.model.KuppiUser
 import org.kuppihub.app.ui.theme.Blue50
 import org.kuppihub.app.ui.theme.White
@@ -34,13 +43,43 @@ fun ProfileCard(
         ) {
             if (isLoggedIn && user != null) {
                 // LOGGED IN VIEW
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "User",
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Profile Image with Border
+                Box(
+                    modifier = Modifier
+                        .size(80.dp) // Slightly bigger than before
+                        .clip(CircleShape)
+                        .border(2.dp, MaterialTheme.colorScheme.primaryContainer, CircleShape)
+                        .background(Color.LightGray)
+                ) {
+                    if (!user.photoUrl.isNullOrBlank()) {
+                        KamelImage(
+                            resource = asyncPainterResource(data = user.photoUrl),
+                            contentDescription = "Profile Photo",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                            onLoading = { progress -> CircularProgressIndicator(progress) },
+                            onFailure = {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = null,
+                                    tint = Color.Gray,
+                                    modifier = Modifier.padding(20.dp)
+                                )
+                            }
+                        )
+                    } else {
+                        // Fallback Icon
+                         Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "User",
+                            modifier = Modifier.fillMaxSize(),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(user.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Text(user.email, style = MaterialTheme.typography.bodyMedium)
