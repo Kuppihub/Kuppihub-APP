@@ -95,7 +95,7 @@ fun ProfileScreen(
                 KuppiLogo(modifier = Modifier.scale(1.2f))
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "KuppiHub v1.0.5",
+                    text = "KuppiHub v1.1.2",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.secondary
                 )
