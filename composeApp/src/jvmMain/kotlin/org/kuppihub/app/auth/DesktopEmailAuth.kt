@@ -32,6 +32,21 @@ class DesktopEmailAuth {
         }
     }
 
+
+    // 1. Send Verification Email (REST API)
+    suspend fun sendVerificationEmail(idToken: String): Boolean {
+        return try {
+            client.post("https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=$FIREBASE_API_KEY") {
+                contentType(ContentType.Application.Json)
+                setBody(mapOf("requestType" to "VERIFY_EMAIL", "idToken" to idToken))
+            }
+            true
+        } catch (e: Exception) {
+            println("❌ Failed to send verification email: ${e.message}")
+            false
+        }
+    }
+
     // --- LOGIN ---
     suspend fun signIn(email: String, pass: String): KuppiUser? {
         return try {
@@ -45,6 +60,23 @@ class DesktopEmailAuth {
         } catch (e: Exception) {
             println("❌ Desktop Login Failed: ${e.message}")
             null
+        }
+    }
+
+    suspend fun setDisplayName(idToken: String, name: String): Boolean {
+        return try {
+            client.post("https://identitytoolkit.googleapis.com/v1/accounts:update?key=$FIREBASE_API_KEY") {
+                contentType(ContentType.Application.Json)
+                setBody(mapOf(
+                    "idToken" to idToken,
+                    "displayName" to name,
+                    "returnSecureToken" to true
+                ))
+            }
+            true
+        } catch (e: Exception) {
+            println("❌ Failed to set name: ${e.message}")
+            false
         }
     }
 
@@ -63,6 +95,31 @@ class DesktopEmailAuth {
             null
         }
     }
+
+    // 2. Reload User Data (To check if they verified)
+    suspend fun getUserData(idToken: String): KuppiUser? {
+        return try {
+            val response: UserDataResponse = client.post("https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=$FIREBASE_API_KEY") {
+                contentType(ContentType.Application.Json)
+                setBody(mapOf("idToken" to idToken))
+            }.body()
+
+            val user = response.users.firstOrNull() ?: return null
+
+            KuppiUser(
+                id = user.localId,
+                email = user.email,
+                name = user.displayName ?: "User",
+                photoUrl = user.photoUrl,
+                idToken = idToken, // Keep the existing token
+                refreshToken = null,
+                isEmailVerified = user.emailVerified // 👈 This comes from Firebase
+            )
+        } catch (e: Exception) {
+            println("❌ Failed to reload user: ${e.message}")
+            null
+        }
+    }
 }
 
 // --- REST DATA MODELS ---
@@ -71,6 +128,19 @@ data class EmailAuthRequest(
     val email: String,
     val password: String,
     val returnSecureToken: Boolean = true
+)
+
+
+@Serializable
+data class UserDataResponse(val users: List<UserItem>)
+
+@Serializable
+data class UserItem(
+    val localId: String,
+    val email: String,
+    val emailVerified: Boolean,
+    val displayName: String? = null,
+    val photoUrl: String? = null
 )
 
 @Serializable
@@ -92,4 +162,6 @@ data class EmailAuthResponse(
             refreshToken = refreshToken
         )
     }
+
+
 }

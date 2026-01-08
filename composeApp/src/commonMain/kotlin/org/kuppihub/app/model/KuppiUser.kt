@@ -6,5 +6,6 @@ data class KuppiUser(
     val email: String,
     val photoUrl: String? = null,
     var idToken: String,
-    val refreshToken: String? = null
+    val refreshToken: String? = null,
+    val isEmailVerified: Boolean = false
 )

@@ -10,8 +10,24 @@ class JvmAuthRepository : AuthRepository {
         return auth.signIn(email, pass)
     }
 
-    override suspend fun signUp(email: String, pass: String): KuppiUser? {
-        return auth.signUp(email, pass)
+    override suspend fun signUp(email: String, pass: String, name: String): Result<KuppiUser> {
+        val user = auth.signUp(email, pass)
+        return if (user != null) {
+            // 🆕 Set the name immediately after sign up
+            auth.setDisplayName(user.idToken, name)
+            // Return user with the new name
+            Result.success(user.copy(name = name))
+        } else {
+            Result.failure(Exception("Sign up failed."))
+        }
+    }
+    override suspend fun sendEmailVerification(user: KuppiUser): Boolean {
+        return auth.sendVerificationEmail(user.idToken)
+    }
+
+    override suspend fun reloadUser(user: KuppiUser): KuppiUser? {
+        // We use the lookup API to get fresh data
+        return auth.getUserData(user.idToken)
     }
 }
 
