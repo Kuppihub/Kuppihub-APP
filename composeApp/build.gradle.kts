@@ -46,6 +46,11 @@ kotlin {
             implementation(libs.play.services.auth)
             implementation(libs.kotlinx.coroutines.play.services)
             implementation(libs.kotlinx.coroutines.play.services.v173)
+            implementation(project.dependencies.platform(libs.firebase.bom))
+            implementation(libs.firebase.analytics)
+
+            // 🟢 UPDATE THIS LINE to match the new name:
+            implementation(libs.firebase.inapp.display)
         }
         commonMain.dependencies {
             implementation(compose.runtime)

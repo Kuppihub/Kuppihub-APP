@@ -13,6 +13,7 @@ coilCompose = "3.3.0"
 composeHotReload = "1.0.0"
 composeMultiplatform = "1.9.3"
 firebaseAdmin = "9.2.0"
+firebaseBom = "34.7.0"
 firebaseCommon = "2.4.0"
 googleAuthLibraryOauth2Http = "1.41.0"
 gson = "2.13.2"
@@ -34,8 +35,11 @@ playServicesAuth = "21.4.0"
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilCompose" }
 firebase-admin = { module = "com.google.firebase:firebase-admin", version.ref = "firebaseAdmin" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "firebaseCommon" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-common = { module = "dev.gitlive:firebase-common", version.ref = "firebaseCommon" }
+firebase-inapp-display = { module = "com.google.firebase:firebase-inappmessaging-display" }
 google-auth-library-oauth2-http = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "googleAuthLibraryOauth2Http" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 kamel-image-default = { module = "media.kamel:kamel-image-default", version.ref = "kamelImageDefault" }
