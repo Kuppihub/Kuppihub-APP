@@ -26,7 +26,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "ComposeApp"
+            baseName = "KuppiHub_App"
             isStatic = true
         }
     }
@@ -138,10 +138,25 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
     }
+    applicationVariants.all {
+        val variant = this
+        outputs.all {
+            // This casts the output to a type where we can set the filename
+            val outputImpl = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
+
+            // Defines the new name: "KuppiHub-App-1.1.2-release.apk"
+            val newFileName = "KuppiHub-App-${variant.versionName}-${variant.buildType.name}.apk"
+
+            outputImpl?.outputFileName = newFileName
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+
 }
 
 dependencies {
