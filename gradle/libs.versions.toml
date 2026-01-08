@@ -18,6 +18,7 @@ googleAuthLibraryOauth2Http = "1.41.0"
 gson = "2.13.2"
 junit = "4.13.2"
 kamelImageDefault = "1.0.8"
+kmpnotifier = "1.6.1"
 kotlin = "2.3.0"
 kotlinx-coroutines = "1.10.2"
 kotlinxCoroutinesPlayServices = "1.7.3"
@@ -38,6 +39,7 @@ firebase-common = { module = "dev.gitlive:firebase-common", version.ref = "fireb
 google-auth-library-oauth2-http = { module = "com.google.auth:google-auth-library-oauth2-http", version.ref = "googleAuthLibraryOauth2Http" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 kamel-image-default = { module = "media.kamel:kamel-image-default", version.ref = "kamelImageDefault" }
+kmpnotifier = { module = "io.github.mirzemehdi:kmpnotifier", version.ref = "kmpnotifier" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
