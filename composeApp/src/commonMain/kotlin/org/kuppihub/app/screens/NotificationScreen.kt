@@ -17,10 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.kuppihub.app.data.NotificationItem
+import org.kuppihub.app.ui.components.KuppiLogo
 import org.kuppihub.app.ui.theme.KuppiGradients
 import org.kuppihub.app.ui.theme.White
 import org.kuppihub.app.viewmodel.NotificationViewModel
@@ -41,18 +42,34 @@ fun NotificationScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Notifications", color = White) },
-                navigationIcon = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(KuppiGradients.MainHeader)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                        .padding(horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = White)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                ),
-                modifier = Modifier.background(KuppiGradients.MainHeader)
-            )
+                    KuppiLogo(showText = false)
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        "Notifications",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                }
+                if (isLoading) {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
+            }
         }
     ) { padding ->
         Box(
@@ -64,29 +81,13 @@ fun NotificationScreen(
             if (isLoading && notifications.isEmpty()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (notifications.isEmpty()) {
-                Column(
-                    modifier = Modifier.align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = "No Notifications",
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(64.dp)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "No notifications yet",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                EmptyState()
             } else {
                 LazyColumn(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(notifications) { notification ->
+                    items(notifications, key = { it.id }) { notification ->
                         NotificationItemCard(
                             notification = notification,
                             onClick = {
@@ -101,40 +102,73 @@ fun NotificationScreen(
 }
 
 @Composable
+private fun EmptyState() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Default.Notifications,
+            contentDescription = "No Notifications",
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(80.dp)
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "You're all caught up!",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "New notifications from your modules will appear here.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
 fun NotificationItemCard(
     notification: NotificationItem,
     onClick: () -> Unit
 ) {
-    val backgroundColor = if (notification.is_read) White else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-    
+    val backgroundColor = if (notification.is_read) {
+        MaterialTheme.colorScheme.surface
+    } else {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+    }
+    val titleWeight = if (notification.is_read) FontWeight.Normal else FontWeight.Bold
+
     Card(
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier.clickable { onClick() }
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp, pressedElevation = 4.dp),
+        modifier = Modifier.fillMaxWidth().clickable { onClick() }
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // Unread Indicator
-            if (!notification.is_read) {
-                Box(
-                    modifier = Modifier
-                        .padding(top = 6.dp, end = 12.dp)
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-                )
-            } else {
-                 Spacer(modifier = Modifier.width(22.dp))
-            }
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 2.dp)
+            )
 
-            Column {
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = notification.title,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = titleWeight,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
@@ -145,15 +179,25 @@ fun NotificationItemCard(
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
-                
                 if (notification.created_at != null) {
-                     Spacer(modifier = Modifier.height(8.dp))
-                     Text(
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
                         text = notification.created_at, // You might want to format this date
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline
+                        color = MaterialTheme.colorScheme.outline,
+                        modifier = Modifier.align(Alignment.End)
                     )
                 }
+            }
+
+            if (!notification.is_read) {
+                Box(
+                    modifier = Modifier
+                        .padding(start = 12.dp)
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                )
             }
         }
     }
