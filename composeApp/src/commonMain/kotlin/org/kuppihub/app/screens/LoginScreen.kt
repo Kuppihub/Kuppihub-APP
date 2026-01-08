@@ -23,6 +23,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kuppihubappnew.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.kuppihub.app.model.KuppiUser
 import org.kuppihub.app.ui.components.GoogleLogoIcon
 import org.kuppihub.app.ui.components.KuppiLogo
@@ -100,7 +102,7 @@ fun LoginScreen(
                     } else {
                         // Title
                         Text(
-                            text = if (isSignUpMode) "Create Account" else "Welcome Back",
+                            text = if (isSignUpMode) "Create Account" else stringResource(Res.string.login_title),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -243,7 +245,7 @@ fun LoginScreen(
                                 )
                             ) {
                                 Text(
-                                    text = if (isSignUpMode) "Sign Up" else "Log In",
+                                    text = if (isSignUpMode) "Sign Up" else stringResource(Res.string.login_button),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
@@ -254,13 +256,13 @@ fun LoginScreen(
 
                         // Divider with "Or"
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Divider(modifier = Modifier.weight(1f))
+                            HorizontalDivider(modifier = Modifier.weight(1f))
                             Text(
                                 " or ",
                                 modifier = Modifier.padding(horizontal = 8.dp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Divider(modifier = Modifier.weight(1f))
+                            HorizontalDivider(modifier = Modifier.weight(1f))
                         }
 
                         Spacer(modifier = Modifier.height(24.dp))
@@ -278,7 +280,7 @@ fun LoginScreen(
                             GoogleLogoIcon()
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                "Continue with Google",
+                                stringResource(Res.string.google_login_button),
                                 color = Color.Black.copy(alpha = 0.87f),
                                 fontSize = 16.sp
                             )
@@ -300,7 +302,7 @@ fun LoginScreen(
                                 passwordMatchError = null // Clear error when switching
                             }) {
                                 Text(
-                                    if (isSignUpMode) "Log In" else "Sign Up",
+                                    if (isSignUpMode) stringResource(Res.string.login_button) else "Sign Up",
                                     fontWeight = FontWeight.Bold
                                 )
                             }

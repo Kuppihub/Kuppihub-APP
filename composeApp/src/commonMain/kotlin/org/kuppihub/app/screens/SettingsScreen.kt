@@ -10,6 +10,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kuppihubappnew.composeapp.generated.resources.Res
+import kuppihubappnew.composeapp.generated.resources.back
+import kuppihubappnew.composeapp.generated.resources.settings_title
+import org.jetbrains.compose.resources.stringResource
 import org.kuppihub.app.ui.components.KuppiLogo
 import org.kuppihub.app.ui.theme.KuppiGradients
 
@@ -37,11 +41,11 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = onBackClick) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back), tint = Color.Black)
                         }
                         KuppiLogo(showText = false)
                         Spacer(Modifier.width(12.dp))
-                        Text("App Settings", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(Res.string.settings_title), style = MaterialTheme.typography.titleMedium)
                     }
                 }
             }

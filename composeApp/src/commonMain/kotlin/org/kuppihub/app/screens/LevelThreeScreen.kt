@@ -17,7 +17,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kuppihubappnew.composeapp.generated.resources.*
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.getString
 import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.data.LocalDashboardRepo
 import org.kuppihub.app.model.ModuleResponse
@@ -33,10 +36,12 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String, onB
     val scope = rememberCoroutineScope()
 
     var modules by remember { mutableStateOf<List<ModuleResponse>>(emptyList()) }
-    var title by remember { mutableStateOf("Loading...") }
+    var title by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
     var debugText by remember { mutableStateOf("") }
     var savedIds by remember { mutableStateOf<Set<Int>>(emptySet()) }
+    
+    val loadingText = stringResource(Res.string.loading)
 
     LaunchedEffect(Unit) {
         println("DEBUG: Level 3 Started for Faculty: $facultyId, Dept: $childId, Sem: $semesterId")
@@ -89,11 +94,11 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String, onB
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = onBackClick) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(Res.string.back), tint = Color.Black)
                         }
                         KuppiLogo(showText = false)
                         Spacer(Modifier.width(12.dp))
-                        Text(title, style = MaterialTheme.typography.titleMedium)
+                        Text(if (title.isEmpty()) loadingText else title, style = MaterialTheme.typography.titleMedium)
                     }
                 }
             }
@@ -123,7 +128,7 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String, onB
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (modules.isEmpty()) {
                 Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("No modules found.")
+                    Text(stringResource(Res.string.no_modules_found))
                     Spacer(Modifier.height(8.dp))
                     Text(debugText, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                 }
@@ -147,8 +152,9 @@ fun LevelThreeScreen(facultyId: String, childId: String, semesterId: String, onB
                                     savedIds = savedIds + item.module.id
 
                                     scope.launch {
+                                        val addedSuccessfullyText = "Module added successfully" // Consider adding to strings.xml
                                         snackbarHostState.showSnackbar(
-                                            message = "Module added successfully",
+                                            message = addedSuccessfullyText,
                                             withDismissAction = true
                                         )
                                     }
@@ -207,13 +213,13 @@ fun ModuleCard(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Videos",
+                            contentDescription = null,
                             modifier = Modifier.size(14.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "${item.video_count} Videos",
+                            text = stringResource(Res.string.modules_count, item.video_count).replace("Modules", "Videos"), // Temp hack or add 'videos_count' to strings.xml
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -244,7 +250,7 @@ fun ModuleCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.AddCircle,
-                            contentDescription = "Add",
+                            contentDescription = stringResource(Res.string.add_module),
                             tint = Color.White
                         )
                     }

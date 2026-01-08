@@ -20,6 +20,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import kuppihubappnew.composeapp.generated.resources.Res
+import kuppihubappnew.composeapp.generated.resources.back
+import kuppihubappnew.composeapp.generated.resources.notifications_title
+import kuppihubappnew.composeapp.generated.resources.no_notifications_title
+import kuppihubappnew.composeapp.generated.resources.no_notifications_message
 import org.kuppihub.app.data.NotificationItem
 import org.kuppihub.app.ui.components.KuppiLogo
 import org.kuppihub.app.ui.theme.KuppiGradients
@@ -55,12 +61,16 @@ fun NotificationScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack, 
+                            contentDescription = stringResource(Res.string.back), 
+                            tint = Color.Black
+                        )
                     }
                     KuppiLogo(showText = false)
                     Spacer(Modifier.width(12.dp))
                     Text(
-                        "Notifications",
+                        text = stringResource(Res.string.notifications_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -112,20 +122,20 @@ private fun EmptyState() {
     ) {
         Icon(
             imageVector = Icons.Default.Notifications,
-            contentDescription = "No Notifications",
+            contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(80.dp)
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = "You're all caught up!",
+            text = stringResource(Res.string.no_notifications_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "New notifications from your modules will appear here.",
+            text = stringResource(Res.string.no_notifications_message),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

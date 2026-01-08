@@ -16,6 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import kuppihubappnew.composeapp.generated.resources.*
 import org.kuppihub.app.ui.components.KuppiLogo
 import org.kuppihub.app.ui.theme.KuppiGradients
 import org.kuppihub.app.ui.theme.White
@@ -50,8 +52,8 @@ fun DashboardScreen(
         val (moduleId, moduleCode) = showDeleteDialog!!
         AlertDialog(
             onDismissRequest = { showDeleteDialog = null },
-            title = { Text("Remove Module?") },
-            text = { Text("Are you sure you want to remove $moduleCode from your dashboard?") },
+            title = { Text(stringResource(Res.string.remove_module_dialog_title)) },
+            text = { Text(stringResource(Res.string.remove_module_dialog_message, moduleCode)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -59,12 +61,12 @@ fun DashboardScreen(
                         showDeleteDialog = null
                     }
                 ) {
-                    Text("Yes, Remove", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(Res.string.remove_module_confirm), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = null }) {
-                    Text("Cancel")
+                    Text(stringResource(Res.string.cancel))
                 }
             }
         )
@@ -103,7 +105,7 @@ fun DashboardScreen(
                     IconButton(onClick = onNotificationClick) {
                         Icon(
                             imageVector = Icons.Default.Notifications,
-                            contentDescription = "Notifications",
+                            contentDescription = stringResource(Res.string.notifications_title),
                             tint = White
                         )
                     }
@@ -116,7 +118,7 @@ fun DashboardScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = White
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Module")
+                Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.add_module))
             }
         }
     ) { p ->
@@ -135,13 +137,13 @@ fun DashboardScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "No modules added yet.",
+                        text = stringResource(Res.string.no_modules_added),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Start by adding your first module.",
+                        text = stringResource(Res.string.start_adding_modules),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -161,7 +163,7 @@ fun DashboardScreen(
                                 .padding(horizontal = 24.dp, vertical = 12.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("Browse Modules", color = White)
+                            Text(stringResource(Res.string.browse_modules), color = White)
                         }
                     }
                 }
@@ -173,7 +175,7 @@ fun DashboardScreen(
                     if (errorMessage != null) {
                         item {
                             Text(
-                                text = "⚠️ Offline Mode: Showing cached data",
+                                text = stringResource(Res.string.offline_mode_message),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(bottom = 8.dp)

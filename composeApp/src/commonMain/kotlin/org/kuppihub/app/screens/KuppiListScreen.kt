@@ -22,7 +22,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kuppihubappnew.composeapp.generated.resources.*
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.getString
 import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.data.LocalDashboardRepo
 import org.kuppihub.app.model.KuppiResponse
@@ -66,7 +69,10 @@ fun KuppiListScreen(moduleId: Int, moduleCode: String, onBackClick: () -> Unit) 
             isOffline = true
             // If we have cached data, tell the user
             if (kuppis.isNotEmpty()) {
-                scope.launch { snackbarHostState.showSnackbar("Offline: Showing cached videos") }
+                scope.launch { 
+                    val offlineMsg = getString(Res.string.offline_mode_message)
+                    snackbarHostState.showSnackbar(offlineMsg) 
+                }
             }
         } finally {
             isLoading = false
@@ -93,14 +99,14 @@ fun KuppiListScreen(moduleId: Int, moduleCode: String, onBackClick: () -> Unit) 
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = onBackClick) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back), tint = Color.Black)
                         }
                         KuppiLogo(showText = false)
                         Spacer(Modifier.width(12.dp))
                         Column {
                             Text("$moduleCode Videos", style = MaterialTheme.typography.titleMedium)
                             if (isOffline) {
-                                Text("Offline Mode", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
+                                Text(stringResource(Res.string.offline_mode_message), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
                             }
                         }
                     }
@@ -128,8 +134,8 @@ fun KuppiListScreen(moduleId: Int, moduleCode: String, onBackClick: () -> Unit) 
             }
             else if (kuppis.isEmpty()) {
                 Column(modifier = Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("No videos found.")
-                    if(isOffline) Text("Connect to internet to refresh.", style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(Res.string.no_kuppis_found))
+                    if(isOffline) Text(stringResource(Res.string.search_failed_message), style = MaterialTheme.typography.bodySmall)
                 }
             }
             else {

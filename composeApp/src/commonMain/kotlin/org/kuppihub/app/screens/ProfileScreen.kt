@@ -11,6 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kuppihubappnew.composeapp.generated.resources.Res
+import kuppihubappnew.composeapp.generated.resources.version
+import org.jetbrains.compose.resources.stringResource
 import org.kuppihub.app.auth.GoogleAuthService
 import org.kuppihub.app.model.KuppiUser
 import org.kuppihub.app.ui.components.KuppiLogo
@@ -95,7 +98,7 @@ fun ProfileScreen(
                 KuppiLogo(modifier = Modifier.scale(1.2f))
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "KuppiHub v1.1.2",
+                    text = stringResource(Res.string.version, "1.1.2"),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.secondary
                 )

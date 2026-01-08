@@ -22,7 +22,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import kuppihubappnew.composeapp.generated.resources.*
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import org.kuppihub.app.ui.theme.KuppiGradients
 import org.kuppihub.app.viewmodel.AddKuppiViewModel
 // For opening URIs
@@ -93,7 +95,7 @@ fun AddKuppiScreen(
                     modifier = Modifier.size(48.dp)
                 ) 
             },
-            title = { Text("Added Successfully!", style = MaterialTheme.typography.headlineSmall) },
+            title = { Text(stringResource(Res.string.kuppi_added_snackbar), style = MaterialTheme.typography.headlineSmall) },
             text = { Text("Your kuppi has been submitted and will be reviewed soon.", style = MaterialTheme.typography.bodyMedium) },
             confirmButton = {
                 Button(
@@ -122,10 +124,10 @@ fun AddKuppiScreen(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = onBackClick) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back), tint = Color.Black)
                         }
                         Spacer(Modifier.width(8.dp))
-                        Text("Add New Kuppi", style = MaterialTheme.typography.titleMedium, color = Color.Black)
+                        Text(stringResource(Res.string.add_kuppi_title), style = MaterialTheme.typography.titleMedium, color = Color.Black)
                     }
                 }
             }
@@ -150,7 +152,7 @@ fun AddKuppiScreen(
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { viewModel.onSearchQueryChange(it) },
-                        label = { Text("Search Module (e.g. CS10)") },
+                        label = { Text(stringResource(Res.string.search_modules_placeholder)) },
                         leadingIcon = { Icon(Icons.Default.Search, null) },
                         trailingIcon = if (selectedModule != null) {
                             { Icon(Icons.Default.Check, null, tint = Color(0xFF4CAF50)) }
@@ -201,7 +203,7 @@ fun AddKuppiScreen(
                     OutlinedTextField(
                         value = title,
                         onValueChange = { viewModel.title.value = it },
-                        label = { Text("Title") },
+                        label = { Text(stringResource(Res.string.kuppi_title_label)) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -316,12 +318,12 @@ fun AddKuppiScreen(
             
             // YouTube
             LinkSectionCard(
-                title = "YouTube Links", 
+                title = stringResource(Res.string.youtube_link_label), 
                 icon = Icons.Default.SmartDisplay, // Closest to YouTubeIcon
                 color = Color(0xFFDC2626),
                 bgColor = Color(0xFFFEF2F2),
                 borderColor = Color(0xFFFECACA),
-                placeholder = "https://www.youtube.com/watch?v=...",
+                placeholder = stringResource(Res.string.youtube_link_placeholder),
                 links = youtubeLinks, 
                 onAdd = { viewModel.addLink(viewModel.youtubeLinks) }, 
                 onRemove = { viewModel.removeLink(viewModel.youtubeLinks, it) }, 
@@ -420,7 +422,7 @@ fun AddKuppiScreen(
                 else {
                     Icon(Icons.Default.Add, null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Submit Kuppi")
+                    Text(stringResource(Res.string.add_kuppi_button))
                 }
             }
 

@@ -13,6 +13,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kuppihubappnew.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.kuppihub.app.ui.components.KuppiLogo
 import org.kuppihub.app.ui.theme.KuppiGradients
 
@@ -40,11 +42,11 @@ fun AboutScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = onBackClick) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back), tint = Color.Black)
                         }
                         KuppiLogo(showText = false)
                         Spacer(Modifier.width(12.dp))
-                        Text("About KuppiHub", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(Res.string.about_title), style = MaterialTheme.typography.titleMedium)
                     }
                 }
             }
@@ -69,7 +71,7 @@ fun AboutScreen(
                 Spacer(modifier = Modifier.height(32.dp))
                 
                 Text(
-                    text = "KuppiHub",
+                    text = stringResource(Res.string.app_name),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -77,7 +79,7 @@ fun AboutScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 Text(
-                    text = "v1.1.2",
+                    text = stringResource(Res.string.version, "1.1.2"),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -85,7 +87,7 @@ fun AboutScreen(
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 Text(
-                    text = "KuppiHub is a platform built by students for students. Our goal is to make sharing and finding academic resources easier and more accessible for everyone at UOM.",
+                    text = stringResource(Res.string.kuppihub_description),
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant

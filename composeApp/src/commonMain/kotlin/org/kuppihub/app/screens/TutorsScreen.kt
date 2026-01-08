@@ -29,6 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kuppihubappnew.composeapp.generated.resources.Res
+import kuppihubappnew.composeapp.generated.resources.back
+import kuppihubappnew.composeapp.generated.resources.kuppi_count
+import org.jetbrains.compose.resources.stringResource
 import org.kuppihub.app.model.Tutor
 import org.kuppihub.app.ui.components.KuppiLogo
 import org.kuppihub.app.ui.theme.KuppiGradients
@@ -62,7 +66,7 @@ fun TutorsScreen(onBackClick: () -> Unit) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = onBackClick) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.back), tint = Color.Black)
                         }
                         KuppiLogo(showText = false)
                         Spacer(Modifier.width(12.dp))
@@ -165,7 +169,7 @@ fun TutorCard(tutor: Tutor) {
             // ... (Rest of your code for Name, Count, LinkedIn remains exactly the same) ...
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = tutor.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Text(text = "${tutor.videoCount} Kuppis", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = 4.dp))
+            Text(text = stringResource(Res.string.kuppi_count, tutor.videoCount), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = 4.dp))
 
             if (tutor.modulesDone.isNotEmpty()) {
                 Text(

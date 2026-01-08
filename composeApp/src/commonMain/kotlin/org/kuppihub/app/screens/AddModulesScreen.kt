@@ -18,7 +18,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kuppihubappnew.composeapp.generated.resources.*
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.getString
 import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.data.LocalDashboardRepo
 import org.kuppihub.app.model.Faculty
@@ -73,7 +76,8 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                 // If search fails (no internet), just show nothing
                 e.printStackTrace()
                 searchResults = emptyList()
-                scope.launch { snackbarHostState.showSnackbar("Search failed. Check internet.") }
+                val errorMsg = getString(Res.string.search_failed_message)
+                snackbarHostState.showSnackbar(errorMsg)
             } finally {
                 isSearching = false
             }
@@ -100,7 +104,7 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                     TextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
-                        placeholder = { Text("Search modules...") },
+                        placeholder = { Text(stringResource(Res.string.search_modules_placeholder)) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
                         colors = TextFieldDefaults.colors(
@@ -116,7 +120,7 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                                     searchQuery = ""
                                     focusManager.clearFocus()
                                 }) {
-                                    Icon(Icons.Default.Close, contentDescription = "Clear")
+                                    Icon(Icons.Default.Close, contentDescription = stringResource(Res.string.clear_search))
                                 }
                             }
                         },
@@ -141,7 +145,7 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
             // VIEW A: SEARCH RESULTS
             if (searchQuery.length >= 2) {
                 if (searchResults.isEmpty() && !isSearching) {
-                    Text("No modules found.", modifier = Modifier.align(Alignment.Center))
+                    Text(stringResource(Res.string.no_modules_found), modifier = Modifier.align(Alignment.Center))
                 } else {
                     LazyColumn(
                         contentPadding = PaddingValues(16.dp),
@@ -160,7 +164,8 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                                         LocalDashboardRepo.addModule(tempModuleResponse)
                                         savedIds = savedIds + item.id
                                         scope.launch {
-                                            snackbarHostState.showSnackbar("Added ${item.code} to Dashboard")
+                                            val addedMsg = getString(Res.string.added_to_dashboard_snackbar, item.code)
+                                            snackbarHostState.showSnackbar(addedMsg)
                                         }
                                     }
                                 }
@@ -180,10 +185,10 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                         modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(Icons.Default.WifiOff, contentDescription = "Offline", modifier = Modifier.size(48.dp), tint = Color.Gray)
+                        Icon(Icons.Default.WifiOff, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color.Gray)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("No Internet Connection", style = MaterialTheme.typography.bodyLarge)
-                        Text("Cannot load faculties.", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        Text(stringResource(Res.string.no_internet_connection), style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(Res.string.cannot_load_faculties), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = {
                             // Retry Logic
@@ -198,7 +203,7 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                                 isLoading = false
                             }
                         }) {
-                            Text("Retry")
+                            Text(stringResource(Res.string.retry))
                         }
                     }
                 }
@@ -206,7 +211,7 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                     LazyColumn(contentPadding = PaddingValues(16.dp)) {
                         item {
                             Text(
-                                "Browse by Faculty",
+                                stringResource(Res.string.browse_by_faculty),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(bottom = 12.dp, start = 4.dp),
@@ -235,14 +240,14 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
                                             fontWeight = FontWeight.SemiBold
                                         )
                                         Text(
-                                            "${faculty.children.size} Departments",
+                                            stringResource(Res.string.departments_count, faculty.children.size),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
                                     Icon(
                                         imageVector = Icons.Default.ArrowForward,
-                                        contentDescription = "Go",
+                                        contentDescription = stringResource(Res.string.go),
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }

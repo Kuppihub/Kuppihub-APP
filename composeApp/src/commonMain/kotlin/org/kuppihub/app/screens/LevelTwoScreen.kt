@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kuppihubappnew.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.model.Semester
 import org.kuppihub.app.ui.components.KuppiLogo
@@ -30,7 +32,8 @@ fun LevelTwoScreen(
     onBackClick: () -> Unit
 ) {
     var items by remember { mutableStateOf<List<Semester>>(emptyList()) }
-    var screenTitle by remember { mutableStateOf("Loading...") }
+    val loadingText = stringResource(Res.string.loading)
+    var screenTitle by remember { mutableStateOf(loadingText) }
 
     LaunchedEffect(Unit) {
         println("DEBUG: Level 2 Started. Fac: $facultyId, Dept: $childId")
@@ -73,7 +76,7 @@ fun LevelTwoScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = onBackClick) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(Res.string.back), tint = Color.Black)
                         }
                         KuppiLogo(showText = false)
                         Spacer(Modifier.width(12.dp))
@@ -126,7 +129,7 @@ fun LevelTwoScreen(
                                 modifier = Modifier.padding(horizontal = 8.dp)
                             ) {
                                 Text(
-                                    text = "${item.modules.size} Modules",
+                                    text = stringResource(Res.string.modules_count, item.modules.size),
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary,

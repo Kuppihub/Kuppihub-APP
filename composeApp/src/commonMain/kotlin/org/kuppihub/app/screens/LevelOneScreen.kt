@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import kuppihubappnew.composeapp.generated.resources.*
 import org.kuppihub.app.data.KuppiRepository
 import org.kuppihub.app.model.Department
 import org.kuppihub.app.ui.components.KuppiLogo
@@ -25,13 +27,13 @@ import org.kuppihub.app.ui.theme.White
 @Composable
 fun LevelOneScreen(facultyId: String, onItemClick: (String) -> Unit, onBackClick: () -> Unit) {
     var items by remember { mutableStateOf<List<Department>>(emptyList()) }
-    var screenTitle by remember { mutableStateOf("Loading...") }
+    var levelName by remember { mutableStateOf("") }
+    val defaultTitle = stringResource(Res.string.loading)
 
     LaunchedEffect(facultyId) {
         val faculty = KuppiRepository.getFaculty(facultyId)
         if (faculty != null) {
-            val levelName = faculty.levels.getOrNull(0) ?: "Item"
-            screenTitle = "Select $levelName"
+            levelName = faculty.levels.getOrNull(0) ?: "Item"
             items = faculty.children.values.sortedBy { it.order }
         }
     }
@@ -56,11 +58,14 @@ fun LevelOneScreen(facultyId: String, onItemClick: (String) -> Unit, onBackClick
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = onBackClick) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(Res.string.back), tint = Color.Black)
                         }
                         KuppiLogo(showText = false)
                         Spacer(Modifier.width(12.dp))
-                        Text(screenTitle, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = if (levelName.isEmpty()) defaultTitle else stringResource(Res.string.select_level_title, levelName),
+                            style = MaterialTheme.typography.titleMedium
+                        )
                     }
                 }
             }
