@@ -141,7 +141,12 @@ fun MainScreen(
                         navController.navigate(TutorsRoute)
                     },
                     onAddKuppiClick = {
-                        navController.navigate(AddKuppiRoute)
+                        // 🔒 REQUIRE LOGIN FOR ADDING KUPPI
+                        if (currentUser != null) {
+                            navController.navigate(AddKuppiRoute)
+                        } else {
+                            navController.navigate(LoginRoute)
+                        }
                     },
                     onSettingsClick = {
                         navController.navigate(SettingsRoute)

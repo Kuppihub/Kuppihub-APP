@@ -37,28 +37,21 @@ class MainActivity : ComponentActivity() {
         val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK && result.data != null) {
                 lifecycleScope.launch {
-                    // Explicit type declaration helps compiler resolve methods
-                    val firebaseUser: FirebaseUser? = googleAuth.handleLoginResult(result.data!!) as FirebaseUser?
-
-                    if (firebaseUser != null) {
-                        try {
-                            // Uses the manual extension function defined at the bottom
-                            val tokenResult = firebaseUser.getIdToken(false).await()
-                            val token = tokenResult.token ?: ""
-
-                            val user = KuppiUser(
-                                id = firebaseUser.uid,
-                                name = firebaseUser.displayName ?: "User",
-                                email = firebaseUser.email ?: "",
-                                photoUrl = firebaseUser.photoUrl?.toString(),
-                                idToken = token
-                            )
-
-                            KuppiRepository.syncUserToBackend(user)
-                            println("LOGIN SUCCESS & SYNCED: ${user.name}")
-                        } catch (e: Exception) {
-                            println("Login sync failed: ${e.message}")
+                    try {
+                        // FIX: We rely on Firebase.auth state listener, but we trigger the Google Auth flow here
+                        val gitLiveUser = googleAuth.handleLoginResult(result.data!!)
+                        
+                        // We don't need to cast gitLiveUser to com.google.firebase.auth.FirebaseUser manually
+                        // Because the Android AuthStateListener below will pick up the change automatically
+                        // once handleLoginResult signs in to Firebase.
+                        
+                        if (gitLiveUser != null) {
+                            println("DEBUG: Google Sign-In Successful for ${gitLiveUser.displayName}")
+                            // We can fetch token from gitLiveUser if needed, but the listener below handles UI state
                         }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        println("DEBUG: Google Sign-In Failed: ${e.message}")
                     }
                 }
             }
@@ -83,6 +76,17 @@ class MainActivity : ComponentActivity() {
                         // Uses the manual extension function defined at the bottom
                         val result = firebaseUser!!.getIdToken(false).await()
                         currentIdToken = result.token ?: ""
+                        
+                        // Sync with backend if needed
+                         val user = KuppiUser(
+                                id = firebaseUser!!.uid,
+                                name = firebaseUser!!.displayName ?: "User",
+                                email = firebaseUser!!.email ?: "",
+                                photoUrl = firebaseUser!!.photoUrl?.toString(),
+                                idToken = currentIdToken
+                            )
+                        KuppiRepository.syncUserToBackend(user)
+                        
                     } catch (e: Exception) {
                         println("Error fetching token: ${e.message}")
                         currentIdToken = ""
