@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,7 +27,8 @@ fun DashboardScreen(
     viewModel: DashboardViewModel,
     userId: String?,
     onModuleClick: (Int, String) -> Unit,
-    onAddModuleClick: () -> Unit
+    onAddModuleClick: () -> Unit,
+    onNotificationClick: () -> Unit
 ) {
     val displayModules by viewModel.dashboardModules.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -88,14 +90,23 @@ fun DashboardScreen(
                     .fillMaxWidth()
                     .background(KuppiGradients.MainHeader)
             ) {
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp)
                         .padding(horizontal = 16.dp),
-                    contentAlignment = Alignment.CenterStart
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     KuppiLogo()
+                    
+                    IconButton(onClick = onNotificationClick) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Notifications",
+                            tint = White
+                        )
+                    }
                 }
             }
         },

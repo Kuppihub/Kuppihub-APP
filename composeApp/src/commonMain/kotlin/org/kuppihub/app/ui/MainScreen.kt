@@ -24,9 +24,11 @@ import org.kuppihub.app.model.KuppiUser
 import org.kuppihub.app.screens.addkuppi.AddKuppiScreen
 import org.kuppihub.app.ui.theme.White
 import org.kuppihub.app.viewmodel.DashboardViewModel
+import androidx.compose.runtime.LaunchedEffect
 
 // IMPORTS for Share
 import org.kuppihub.app.utils.rememberShareLauncher
+import org.kuppihub.app.viewmodel.NotificationViewModel
 
 @Composable
 fun MainScreen(
@@ -43,7 +45,7 @@ fun MainScreen(
     val scope = rememberCoroutineScope()
     
     val shareLauncher = rememberShareLauncher()
-
+    val notificationViewModel = remember { NotificationViewModel() }
 
 
     Scaffold(
@@ -107,6 +109,13 @@ fun MainScreen(
                             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                             launchSingleTop = true
                             restoreState = true
+                        }
+                    },
+                    onNotificationClick = {
+                        if (currentUser != null) {
+                            navController.navigate(NotificationRoute)
+                        } else {
+                             navController.navigate(LoginRoute)
                         }
                     }
                 )
@@ -205,6 +214,20 @@ fun MainScreen(
                     },
                     onBackClick = { navController.popBackStack() }
                 )
+            }
+
+            composable<NotificationRoute> {
+                if (currentUser != null) {
+                    NotificationScreen(
+                        viewModel = notificationViewModel,
+                        idToken = currentUser.idToken,
+                        onBackClick = { navController.popBackStack() }
+                    )
+                } else {
+                     LaunchedEffect(Unit) {
+                         navController.popBackStack() // Or go to login
+                     }
+                }
             }
 
         }

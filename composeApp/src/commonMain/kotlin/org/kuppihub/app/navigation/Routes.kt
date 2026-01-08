@@ -48,3 +48,5 @@ object AboutRoute
 @Serializable
 object LoginRoute
 
+@Serializable
+object NotificationRoute

@@ -49,6 +49,19 @@ class NotificationRepository(private val client: HttpClient) {
             emptyList()
         }
     }
+
+    // Mark as Read
+    suspend fun markAsRead(notificationId: Int, idToken: String): Boolean {
+        return try {
+            val response = client.put("$BASE_URL/$notificationId/read") {
+                header("Authorization", "Bearer $idToken")
+            }
+            response.status.value in 200..299
+        } catch (e: Exception) {
+            println("❌ Failed to mark notification as read: ${e.message}")
+            false
+        }
+    }
 }
 
 expect fun getDeviceType(): String
