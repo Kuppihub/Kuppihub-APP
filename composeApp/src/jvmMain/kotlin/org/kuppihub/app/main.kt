@@ -14,9 +14,9 @@ import kotlinx.coroutines.launch
 import org.kuppihub.app.auth.DesktopGoogleAuth
 import org.kuppihub.app.model.KuppiUser
 import org.kuppihub.app.ui.MainScreen
-
-// 🔴 ADD THIS MISSING IMPORT
 import org.kuppihub.app.data.NotificationRepository
+import java.util.UUID // 👈 Import UUID
+import kotlinx.serialization.json.Json
 
 fun main() = application {
     val desktopAuth = DesktopGoogleAuth()
@@ -24,61 +24,75 @@ fun main() = application {
     // 1. Setup Dependencies
     val httpClient = remember {
         HttpClient {
-            install(ContentNegotiation) { json() }
+            install(ContentNegotiation) {
+                // This configuration tells Kotlin to ignore "pagination"
+                json(Json {
+                    ignoreUnknownKeys = true
+                    prettyPrint = true
+                    isLenient = true
+                })
+            }
         }
     }
-    // 🔴 Now this line will work because we imported NotificationRepository
     val repo = remember { NotificationRepository(httpClient) }
 
     var desktopUser by remember { mutableStateOf<KuppiUser?>(null) }
+
+    // Generate a unique ID for this Desktop Session
+    val desktopDeviceId = remember { UUID.randomUUID().toString() }
     val scope = rememberCoroutineScope()
 
-    // 2. Initialize Notifications for Desktop
+    // 2. Initialize Notifications
     LaunchedEffect(Unit) {
         NotifierManager.initialize(
-            NotificationPlatformConfiguration.Desktop(
-                showPushNotification = true
-            )
+            NotificationPlatformConfiguration.Desktop(showPushNotification = true)
         )
     }
 
-    // 3. 🔄 POLLING LOGIC (Simulates Push on Desktop)
+    // 3. 🔄 SYNC & POLLING LOGIC
     LaunchedEffect(desktopUser) {
-        while (isActive && desktopUser != null) {
+        if (desktopUser != null) {
+            val token = desktopUser!!.idToken
+
+            // A. 🔴 REGISTER DEVICE (Fixes "Not registered" issue)
             try {
-                // Fetch notifications
-                val notifications = repo.getNotifications(1, desktopUser!!.idToken)
-
-                // If unread, show popup
-                val unread = notifications.firstOrNull { !it.is_read }
-
-                // 🔴 These calls (it.title, it.body) work now because 'notifications' is valid
-                if (unread != null) {
-                    val notifier = NotifierManager.getLocalNotifier()
-                    notifier.notify(
-                        title = unread.title,
-                        body = unread.body
-                    )
-                }
+                println("🖥️ Registering Desktop Device: $desktopDeviceId")
+                repo.registerDevice(
+                    token = desktopDeviceId, // Use UUID as token for Desktop
+                    firebaseUid = desktopUser!!.id,
+                    idToken = token
+                )
             } catch (e: Exception) {
-                println("Polling error: ${e.message}")
+                println("❌ Registration Failed: ${e.message}")
             }
-            delay(2 * 60 * 1000) // Wait 2 minutes
+
+            // B. Polling Loop
+            while (isActive) {
+                try {
+                    val notifications = repo.getNotifications(1, token)
+                    val unread = notifications.firstOrNull { !it.is_read }
+
+                    if (unread != null) {
+                        val notifier = NotifierManager.getLocalNotifier()
+                        notifier.notify(title = unread.title, body = unread.body)
+                    }
+                } catch (e: Exception) {
+                    println("Polling error: ${e.message}")
+                }
+                delay(2 * 60 * 1000) // Poll every 2 mins
+            }
         }
     }
 
     Window(onCloseRequest = ::exitApplication, title = "KuppiHub") {
         MainScreen(
             currentUser = desktopUser,
-
             onGoogleLoginClick = {
                 scope.launch {
                     val code = desktopAuth.signIn()
                     if (code != null) {
                         val realUser = desktopAuth.getRealUser(code)
-                        if (realUser != null) {
-                            desktopUser = realUser
-                        }
+                        if (realUser != null) desktopUser = realUser
                     }
                 }
             },

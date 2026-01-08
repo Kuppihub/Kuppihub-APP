@@ -9,20 +9,19 @@ import kotlinx.serialization.Serializable
 
 class NotificationRepository(private val client: HttpClient) {
 
-    private val BASE_URL = "https://kuppihub.org/api/notifications" // Removed double slash
+    // Use localhost for Desktop if running locally, or your https URL
+    private val BASE_URL = "https://kuppihub.org/api/notifications"
 
-    // 🔴 CHANGED: Added 'idToken' parameter so we can send the Header
     suspend fun registerDevice(token: String, firebaseUid: String?, idToken: String?) {
         try {
             val payload = RegisterDeviceRequest(
                 fcm_token = token,
-                firebase_uid = firebaseUid, // Send String here
+                firebase_uid = firebaseUid,
                 device_type = getDeviceType()
             )
 
             client.post("$BASE_URL/devices") {
                 contentType(ContentType.Application.Json)
-                // 🔴 CHANGED: Add Auth Header if we have a token
                 if (idToken != null && idToken.isNotEmpty()) {
                     header("Authorization", "Bearer $idToken")
                 }
@@ -34,7 +33,22 @@ class NotificationRepository(private val client: HttpClient) {
         }
     }
 
-    // ... getNotifications remains the same ...
+    // 🔴 FIXED: Now parses the JSON Object instead of a List
+    suspend fun getNotifications(page: Int = 1, idToken: String): List<NotificationItem> {
+        return try {
+            val response = client.get(BASE_URL) {
+                parameter("page", page)
+                if (idToken.isNotEmpty()) {
+                    header("Authorization", "Bearer $idToken")
+                }
+            }.body<NotificationResponse>() // 👈 Map to the Wrapper Class
+
+            response.data // Return just the list inside 'data'
+        } catch (e: Exception) {
+            println("❌ Failed to fetch notifications: ${e.message}")
+            emptyList()
+        }
+    }
 }
 
 expect fun getDeviceType(): String
@@ -42,7 +56,22 @@ expect fun getDeviceType(): String
 @Serializable
 data class RegisterDeviceRequest(
     val fcm_token: String,
-    // 🔴 CHANGED: Renamed to match the new Backend expectation
     val firebase_uid: String?,
     val device_type: String
+)
+
+// 🔴 NEW WRAPPER CLASS (Matches your backend response)
+@Serializable
+data class NotificationResponse(
+    val success: Boolean,
+    val data: List<NotificationItem>
+)
+
+@Serializable
+data class NotificationItem(
+    val id: Int,
+    val title: String,
+    val body: String,
+    val is_read: Boolean,
+    val created_at: String? = null
 )
