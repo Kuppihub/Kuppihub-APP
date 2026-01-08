@@ -6,10 +6,12 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.kuppihub.app.model.KuppiResponse
 import org.kuppihub.app.model.ModuleResponse
+import org.kuppihub.app.model.Tutor
 
 object LocalDashboardRepo {
     // Keys for storage
     private const val KEY_MODULES = "dashboard_modules"
+    private const val KEY_TUTORS = "cached_tutors"
 
     // Initialize Settings (Works on Android & iOS)
     private val settings: Settings = Settings()
@@ -97,6 +99,33 @@ object LocalDashboardRepo {
             println("DEBUG_REPO: Saved ${videos.size} videos to [$key]. Text length: ${jsonString.length}")
         } catch (e: Exception) {
             println("DEBUG_REPO: CRASH while saving! Error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    // ==========================================
+    // 🎓 PART 3: TUTORS (Caching)
+    // ==========================================
+
+    fun getCachedTutors(): List<Tutor> {
+        val jsonString = settings.getStringOrNull(KEY_TUTORS)
+        return if (!jsonString.isNullOrBlank()) {
+            try {
+                json.decodeFromString<List<Tutor>>(jsonString)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    fun saveTutors(tutors: List<Tutor>) {
+        try {
+            val jsonString = json.encodeToString(tutors)
+            settings[KEY_TUTORS] = jsonString
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }
