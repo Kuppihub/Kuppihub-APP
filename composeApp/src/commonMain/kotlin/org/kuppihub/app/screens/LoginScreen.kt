@@ -42,7 +42,12 @@ fun LoginScreen(
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") } // 🆕 Confirm Password Field
     var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) } // 🆕 Visibility for confirm
+    
+    // UI Validation State
+    var passwordMatchError by remember { mutableStateOf<String?>(null) }
 
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMsg by viewModel.errorMessage.collectAsState()
@@ -133,9 +138,17 @@ fun LoginScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
+                        // PASSWORD
                         OutlinedTextField(
                             value = password,
-                            onValueChange = { password = it },
+                            onValueChange = { 
+                                password = it 
+                                if (isSignUpMode && confirmPassword.isNotEmpty() && it != confirmPassword) {
+                                     passwordMatchError = "Passwords do not match"
+                                } else {
+                                     passwordMatchError = null
+                                }
+                            },
                             label = { Text("Password") },
                             leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                             trailingIcon = {
@@ -151,9 +164,51 @@ fun LoginScreen(
                             shape = RoundedCornerShape(12.dp),
                             singleLine = true
                         )
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // 🆕 CONFIRM PASSWORD (Only in Sign Up)
+                        if (isSignUpMode) {
+                            OutlinedTextField(
+                                value = confirmPassword,
+                                onValueChange = { 
+                                    confirmPassword = it
+                                    if (password != it) {
+                                        passwordMatchError = "Passwords do not match"
+                                    } else {
+                                        passwordMatchError = null
+                                    }
+                                },
+                                label = { Text("Confirm Password") },
+                                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                                trailingIcon = {
+                                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                        Icon(
+                                            imageVector = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                            contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password"
+                                        )
+                                    }
+                                },
+                                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                singleLine = true,
+                                isError = passwordMatchError != null
+                            )
+                            
+                            if (passwordMatchError != null) {
+                                Text(
+                                    text = passwordMatchError!!,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    modifier = Modifier.padding(start = 8.dp, top = 4.dp).align(Alignment.Start)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
 
-                        // Error Message
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Error Message (From ViewModel)
                         if (errorMsg != null) {
                             Text(
                                 text = errorMsg!!,
@@ -171,11 +226,16 @@ fun LoginScreen(
                             Button(
                                 onClick = {
                                     if (isSignUpMode) {
-                                        viewModel.signUpWithEmail(email, password, name)
+                                        if (password != confirmPassword) {
+                                            passwordMatchError = "Passwords do not match"
+                                        } else {
+                                            viewModel.signUpWithEmail(email, password, name)
+                                        }
                                     } else {
                                         viewModel.loginWithEmail(email, password)
                                     }
                                 },
+                                enabled = !isSignUpMode || (password.isNotEmpty() && password == confirmPassword),
                                 modifier = Modifier.fillMaxWidth().height(50.dp),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.buttonColors(
@@ -235,7 +295,10 @@ fun LoginScreen(
                                 if (isSignUpMode) "Already have an account?" else "Don't have an account?",
                                 style = MaterialTheme.typography.bodyMedium
                             )
-                            TextButton(onClick = { isSignUpMode = !isSignUpMode }) {
+                            TextButton(onClick = { 
+                                isSignUpMode = !isSignUpMode 
+                                passwordMatchError = null // Clear error when switching
+                            }) {
                                 Text(
                                     if (isSignUpMode) "Log In" else "Sign Up",
                                     fontWeight = FontWeight.Bold
