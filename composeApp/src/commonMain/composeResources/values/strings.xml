@@ -92,4 +92,18 @@
     <string name="no_update_available">You are on the latest version.</string>
     <string name="checking_updates">Checking for updates...</string>
 
+    <!-- Settings Screen -->
+    <string name="account_actions_section">Account Actions</string>
+    <string name="clear_cache">Clear Cache</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="support_section">Support &amp; Legal</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="report_bug">Report a Bug</string>
+    <string name="cache_cleared">Cache cleared successfully</string>
+    <string name="delete_account_warning">Are you sure you want to delete your account? This action cannot be undone.</string>
+    <string name="contribution_section">Community &amp; Open Source</string>
+    <string name="contribute_title">Contribute on GitHub</string>
+    <string name="contribute_message">Kuppihub is open source! Anyone can contribute, add new features, or report bugs. Join our community on GitHub.</string>
+
 </resources>
