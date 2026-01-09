@@ -124,9 +124,9 @@ fun DashboardScreen(
     ) { p ->
         Box(
             modifier = Modifier
-                .padding(p)
                 .fillMaxSize()
                 .background(KuppiGradients.PageBackground) // Background Gradient
+                .padding(p)
         ) {
 
             if (isLoading && displayModules.isEmpty()) {

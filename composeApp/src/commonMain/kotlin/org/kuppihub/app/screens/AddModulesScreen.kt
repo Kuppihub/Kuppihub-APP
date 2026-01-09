@@ -137,9 +137,9 @@ fun AddModulesScreen(onFacultyClick: (String) -> Unit) {
     ) { p ->
         Box(
             modifier = Modifier
-                .padding(p)
                 .fillMaxSize()
                 .background(KuppiGradients.PageBackground) // Background Gradient
+                .padding(p)
         ) {
 
             // VIEW A: SEARCH RESULTS
