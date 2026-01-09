@@ -18,5 +18,8 @@ object ApiConstants {
     const val NOTIFICATIONS_BASE = "$BASE_URL/notifications"
     const val NOTIFICATION_DEVICES = "$NOTIFICATIONS_BASE/devices"
     
+    // GitHub Updates
+    const val GITHUB_LATEST_RELEASE = "https://api.github.com/repos/Kuppihub/Kuppihub-APP/releases/latest"
+    
     fun getMarkAsReadUrl(id: Int) = "$NOTIFICATIONS_BASE/$id/read"
 }

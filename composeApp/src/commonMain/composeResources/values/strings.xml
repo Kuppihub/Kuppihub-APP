@@ -75,6 +75,7 @@
     <string name="share_app">Share App</string>
     <string name="kuppi_count">%1$d Kuppis</string>
     <string name="view_profile_button">View Profile</string>
+    <string name="check_updates">Check for Updates</string>
 
     <!-- Tutors Screen -->
     <string name="top_tutors_title">Top Tutors</string>
@@ -82,6 +83,13 @@
     <!-- About Screen -->
     <string name="about_kuppihub_title">About Kuppihub</string>
     <string name="kuppihub_description">Kuppihub is a platform for students to share and discover educational resources.</string>
-    <string name="version">1.0.3</string>
+    <string name="version">1.1.2</string>
+
+    <!-- Update Dialog -->
+    <string name="update_available_title">New Update Available</string>
+    <string name="update_available_message">A new version (%1$s) is available. Would you like to update now?</string>
+    <string name="update_now">Update Now</string>
+    <string name="no_update_available">You are on the latest version.</string>
+    <string name="checking_updates">Checking for updates...</string>
 
 </resources>

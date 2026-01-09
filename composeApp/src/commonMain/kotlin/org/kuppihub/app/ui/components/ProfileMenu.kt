@@ -1,23 +1,25 @@
 package org.kuppihub.app.ui.components
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kuppihubappnew.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ProfileMenu(
-    onTutorsClick: () -> Unit,      // 👈 New
-    onAddKuppiClick: () -> Unit,    // 👈 New
+    onTutorsClick: () -> Unit,
+    onAddKuppiClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onAboutClick: () -> Unit,
-    onShareClick: () -> Unit
+    onShareClick: () -> Unit,
+    onCheckUpdatesClick: () -> Unit,
+    isUpdateLoading: Boolean = false // 👈 Added loading state
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
 
@@ -30,13 +32,13 @@ fun ProfileMenu(
         )
 
         MenuOptionItem(
-            icon = Icons.Default.School, // Icon for Tutors
-            title = "Find Tutors",
+            icon = Icons.Default.School,
+            title = stringResource(Res.string.tutors_title),
             onClick = onTutorsClick
         )
         MenuOptionItem(
-            icon = Icons.Default.AddCircle, // Icon for Adding
-            title = "Add New Kuppi",
+            icon = Icons.Default.AddCircle,
+            title = stringResource(Res.string.add_kuppi_button),
             onClick = onAddKuppiClick
         )
 
@@ -48,8 +50,30 @@ fun ProfileMenu(
             modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
         )
 
-        MenuOptionItem(icon = Icons.Default.Settings, title = "App Settings", onClick = onSettingsClick)
-        MenuOptionItem(icon = Icons.Default.Info, title = "About KuppiHub", onClick = onAboutClick)
-        MenuOptionItem(icon = Icons.Default.Share, title = "Share App", onClick = onShareClick)
+        MenuOptionItem(icon = Icons.Default.Settings, title = stringResource(Res.string.settings_title), onClick = onSettingsClick)
+        
+        // Custom Update Item with Loading state
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                MenuOptionItem(
+                    icon = Icons.Default.SystemUpdate, 
+                    title = if (isUpdateLoading) stringResource(Res.string.checking_updates) else stringResource(Res.string.check_updates), 
+                    onClick = { if (!isUpdateLoading) onCheckUpdatesClick() }
+                )
+            }
+            if (isUpdateLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp).padding(end = 12.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+
+        MenuOptionItem(icon = Icons.Default.Info, title = stringResource(Res.string.about_title), onClick = onAboutClick)
+        MenuOptionItem(icon = Icons.Default.Share, title = stringResource(Res.string.share_app), onClick = onShareClick)
     }
 }
