@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,12 +24,13 @@ import org.kuppihub.app.ui.theme.White
 fun MenuOptionItem(
     icon: ImageVector, 
     title: String, 
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isLoading: Boolean = false // 👈 Added loading state
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(enabled = !isLoading, onClick = onClick) // Disable click when loading
             .padding(vertical = 12.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -57,11 +59,20 @@ fun MenuOptionItem(
             modifier = Modifier.weight(1f)
         )
         
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowForward, 
-            contentDescription = null, 
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), 
-            modifier = Modifier.size(20.dp)
-        )
+        // Show loading spinner OR the arrow
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                strokeWidth = 2.dp,
+                color = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward, 
+                contentDescription = null, 
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), 
+                modifier = Modifier.size(20.dp)
+            )
+        }
     }
 }

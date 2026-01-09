@@ -19,7 +19,7 @@ fun ProfileMenu(
     onAboutClick: () -> Unit,
     onShareClick: () -> Unit,
     onCheckUpdatesClick: () -> Unit,
-    isUpdateLoading: Boolean = false // 👈 Added loading state
+    isUpdateLoading: Boolean = false
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
 
@@ -52,26 +52,13 @@ fun ProfileMenu(
 
         MenuOptionItem(icon = Icons.Default.Settings, title = stringResource(Res.string.settings_title), onClick = onSettingsClick)
         
-        // Custom Update Item with Loading state
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                MenuOptionItem(
-                    icon = Icons.Default.SystemUpdate, 
-                    title = if (isUpdateLoading) stringResource(Res.string.checking_updates) else stringResource(Res.string.check_updates), 
-                    onClick = { if (!isUpdateLoading) onCheckUpdatesClick() }
-                )
-            }
-            if (isUpdateLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp).padding(end = 12.dp),
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
+        // Update Item with integrated Loading state
+        MenuOptionItem(
+            icon = Icons.Default.SystemUpdate, 
+            title = if (isUpdateLoading) stringResource(Res.string.checking_updates) else stringResource(Res.string.check_updates), 
+            onClick = onCheckUpdatesClick,
+            isLoading = isUpdateLoading // 👈 This now handles the arrow-to-round replacement
+        )
 
         MenuOptionItem(icon = Icons.Default.Info, title = stringResource(Res.string.about_title), onClick = onAboutClick)
         MenuOptionItem(icon = Icons.Default.Share, title = stringResource(Res.string.share_app), onClick = onShareClick)

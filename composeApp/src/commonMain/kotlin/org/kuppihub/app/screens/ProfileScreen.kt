@@ -132,15 +132,10 @@ fun ProfileScreen(
                             onAddKuppiClick = onAddKuppiClick,
                             onCheckUpdatesClick = {
                                 updateViewModel.checkForUpdates(currentVersion)
-                            }
+                            },
+                            isUpdateLoading = isLoadingUpdates // 👈 Passing loading state here
                         )
                     }
-                }
-
-                if (isLoadingUpdates) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                    Text(stringResource(Res.string.checking_updates), style = MaterialTheme.typography.labelSmall)
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
